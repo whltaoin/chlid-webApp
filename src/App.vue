@@ -1,195 +1,103 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import LoginPage from './components/LoginPage.vue';
-import AIAssistant from './components/AIAssistant.vue';
-import ProfilePage from './components/ProfilePage.vue';
-import { showToast } from 'vant';
+import { ref, onMounted, onUnmounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { useUserStore } from './stores/userStore';
+import { Tabbar, TabbarItem } from 'vant';
 
-// 定义当前激活的标签页
-const active = ref('home')
-// 定义导航栏展开状态
-const isNavOpen = ref(false)
-// 定义是否已登录
-const isLoggedIn = ref(false)
+// 初始化路由和状态管理
+const router = useRouter();
+const route = useRoute();
+const userStore = useUserStore();
 
-// 定义标签页切换事件处理函数
-  const onChange = (value: string) => {
-    // 如果不是首页且未登录，则跳转到登录页面
-    if (value !== 'home' && !isLoggedIn.value) {
-      active.value = 'login'
-    } else {
-      // 已登录或切换到首页，则正常切换
-      active.value = value
-    }
-  }
+// 响应式数据
+const isNavOpen = ref<boolean>(false); // 默认关闭，点击汉堡菜单打开
+const activeTab = ref<string>('home'); // 底部导航栏当前选中项
 
-// 切换导航栏显示状态
+// 切换导航菜单显示状态
 const toggleNav = () => {
-  isNavOpen.value = !isNavOpen.value
-}
+  isNavOpen.value = !isNavOpen.value;
+};
 
-// 关闭导航栏
-const closeNav = () => {
-  isNavOpen.value = false
-}
-
-// 处理登录成功
-const handleLoginSuccess = () => {
-  isLoggedIn.value = true;
-  active.value = 'profile';
-  showToast('登录成功');
-}
-
-// 处理登录取消
-const handleLoginCancel = () => {
-  active.value = 'home';
-}
-
-// 处理导航菜单项点击
-  const handleNavItemClick = (itemName: string) => {
-    if (!isLoggedIn.value) {
-      // 跳转到登录页面
-      active.value = 'login'
-    } else {
-      // 已登录，正常跳转
-      // 这里可以添加其他页面的处理逻辑
-      console.log('Navigate to:', itemName)
-    }
+// 点击页面其他区域关闭菜单
+const closeNavOnClickOutside = (event: MouseEvent) => {
+  const navMenu = document.querySelector('.nav-menu');
+  const menuIcon = document.querySelector('.menu-icon');
+  
+  // 如果点击的不是导航菜单或菜单图标，且菜单是打开的，则关闭菜单
+  if (navMenu && menuIcon && 
+      !navMenu.contains(event.target as Node) && 
+      !menuIcon.contains(event.target as Node) && 
+      isNavOpen.value) {
+    isNavOpen.value = false;
   }
+};
 
-// 处理登出
-const handleLogout = () => {
-  isLoggedIn.value = false
-  active.value = 'home'
-}
+// 处理导航项点击
+const handleNavItemClick = (routeName: string) => {
+  router.push({ name: routeName });
+  isNavOpen.value = false; // 点击后关闭菜单
+};
+
+// 组件挂载后执行
+onMounted(() => {
+  document.addEventListener('click', closeNavOnClickOutside);
+});
+
+// 组件卸载前移除事件监听器
+onUnmounted(() => {
+  document.removeEventListener('click', closeNavOnClickOutside);
+});
 </script>
 
 <template>
-  <div class="app-container">
-    <!-- 顶部导航栏 - 只在非登录页面显示 -->
-    <header v-if="active !== 'login'" class="top-nav">
-      <!-- 汉堡菜单图标 -->
-      <div class="menu-icon" @click="toggleNav">
-        <div class="bar"></div>
-        <div class="bar"></div>
-        <div class="bar"></div>
-      </div>
-    </header>
-    
-    <!-- 导航菜单内容 - 只在非登录页面显示 -->
-    <div v-if="active !== 'login'" class="nav-menu" :class="{ 'nav-open': isNavOpen }">
-      <div class="nav-content">
-        <div class="nav-item" @click="() => { active = 'home'; closeNav() }">
-          <span class="nav-icon">🏠</span>
-          <span class="nav-text">首页</span>
+    <div class="app-container">
+      <!-- 顶部导航栏 - 只在非登录页面和非班级详情页面显示 -->
+      <header v-if="route.name !== 'login' && route.name !== 'classDetail'" class="top-nav">
+        <!-- 汉堡菜单按钮 -->
+        <div class="menu-icon" @click.stop="toggleNav">
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
         </div>
-        <div class="nav-item" @click="() => { active = 'ai'; closeNav() }">
-          <span class="nav-icon">🤖</span>
-          <span class="nav-text">AI助手</span>
+      </header>
+      
+      <!-- 导航菜单内容 - 使用vue-router进行导航 -->
+      <div v-if="isNavOpen" class="nav-menu">
+        <!-- <div class="nav-item" @click="handleNavItemClick('home')">
+          <span>🏠 首页</span>
         </div>
-        <div class="nav-item" @click="() => { active = 'profile'; closeNav() }">
-          <span class="nav-icon">👤</span>
-          <span class="nav-text">个人中心</span>
+        <div class="nav-item" @click="handleNavItemClick('aiAssistant')">
+          <span>🤖 AI助手</span>
+        </div> -->
+        <div class="nav-item" @click="handleNavItemClick('checkIn')">
+          <span>📋 入离园管理</span>
         </div>
-        <div class="nav-item" @click="() => { handleNavItemClick('courses'); closeNav() }">
-          <span class="nav-icon">📚</span>
-          <span class="nav-text">课程安排</span>
+        <div class="nav-item" @click="handleNavItemClick('dangerBehaviors')">
+          <span>⚠️ 危险行为提醒</span>
         </div>
-        <div class="nav-item" @click="() => { handleNavItemClick('calendar'); closeNav() }">
-          <span class="nav-icon">📅</span>
-          <span class="nav-text">活动日历</span>
-        </div>
-        <div class="nav-item" @click="() => { handleNavItemClick('contact'); closeNav() }">
-          <span class="nav-icon">📞</span>
-          <span class="nav-text">联系我们</span>
-        </div>
-      </div>
-    </div>
-    
-    <!-- 导航遮罩层 - 只在非登录页面显示 -->
-    <div 
-      v-if="active !== 'login' && isNavOpen" 
-      class="nav-overlay" 
-      @click="closeNav"
-    ></div>
-    
-    <!-- 页面内容区域 -->
-    <div v-if="active !== 'login'" class="content-wrapper">
-      <!-- 根据不同的激活标签显示不同的页面内容 -->
-      <div v-if="active === 'home'" class="home-page">
-        <!-- 首页内容 -->
-        <div class="kindergarten-header">
-          <!-- 使用背景色代替图片，避免跨域问题 -->
-          <div class="header-bg"></div>
-          <h1 class="kindergarten-name">未来之星幼儿园</h1>
-          <p class="kindergarten-slogan">科技与童真的完美融合</p>
-        </div>
-        
-        <!-- 幼儿园基本信息 -->
-        <div class="kindergarten-info">
-          <h2 class="section-title">关于我们</h2>
-          <div class="info-content">
-            <p>未来之星幼儿园创建于2010年，是一所融合科技与童真的现代化幼儿园。</p>
-            <p>我们致力于为孩子们提供一个安全、温馨且富有创意的学习环境，让每个孩子都能在快乐中成长。</p>
-          </div>
-        </div>
-        
-        <!-- 特色栏目 -->
-        <div class="features-section">
-          <h2 class="section-title">特色课程</h2>
-          <div class="features-list">
-            <div class="feature-item">
-              <div class="feature-icon">🤖</div>
-              <div class="feature-text">AI智能启蒙</div>
-            </div>
-            <div class="feature-item">
-              <div class="feature-icon">🎨</div>
-              <div class="feature-text">创意美术</div>
-            </div>
-            <div class="feature-item">
-              <div class="feature-icon">🎵</div>
-              <div class="feature-text">音乐舞蹈</div>
-            </div>
-            <div class="feature-item">
-              <div class="feature-icon">🔬</div>
-              <div class="feature-text">科学探索</div>
-            </div>
-          </div>
-        </div>
+        <!-- <div class="nav-item" @click="handleNavItemClick('profile')">
+          <span>👤 个人中心</span>
+        </div> -->
       </div>
       
-      <!-- AI助手页面组件 -->
-      <AIAssistant v-if="active === 'ai'" />
+      <!-- 导航遮罩层 -->
+      <div v-if="isNavOpen" class="nav-overlay" @click="isNavOpen = false"></div>
       
-      <!-- 个人中心页面组件 -->
-      <ProfilePage 
-        v-if="active === 'profile'" 
-        :isLoggedIn="isLoggedIn"
-        @login="active = 'login'"
-        @logout="handleLogout"
-      />
+      <!-- 内容包装器 -->
+      <div class="content-wrapper">
+        <!-- 使用router-view显示当前路由对应的组件 -->
+        <router-view />
+      </div>
+      
+      <!-- 底部导航栏 - 只在非登录页面和非班级详情页面显示 -->
+      <div v-if="route.name !== 'login' && route.name !== 'classDetail'">
+        <van-tabbar v-model="activeTab" route>
+            <van-tabbar-item name="home" icon="home-o" to="/" title="首页"></van-tabbar-item>
+            <van-tabbar-item name="aiAssistant" icon="chat-o" to="/ai-assistant" title="AI助手"></van-tabbar-item>
+            <van-tabbar-item name="profile" icon="user-o" to="/profile" title="个人中心"></van-tabbar-item>
+          </van-tabbar>
+      </div>
     </div>
-    
-    <!-- 登录页面组件 -->
-    <LoginPage 
-      v-if="active === 'login'" 
-      :onLoginSuccess="handleLoginSuccess"
-      :onCancel="handleLoginCancel"
-    />
-    
-    <!-- 底部导航栏 - 只在非登录页面显示 -->
-    <van-tabbar v-if="active !== 'login'" v-model="active" @change="onChange" >
-      <van-tabbar-item name="home" icon="home-o">
-        首页
-      </van-tabbar-item>
-      <van-tabbar-item name="ai" icon="chat-o">
-        AI助手
-      </van-tabbar-item>
-      <van-tabbar-item name="profile" icon="user-o">
-        个人
-      </van-tabbar-item>
-    </van-tabbar>
-  </div>
 </template>
 
 <style scoped>
@@ -201,8 +109,28 @@ const handleLogout = () => {
 :deep(.van-tabbar-item--active .van-icon),
 .kindergarten-name,
 .kindergarten-slogan,
-.nav-text {
+.nav-text,
+.bottom-nav .active .nav-text {
   color: inherit !important;
+}
+
+/* 为内容区域添加底部内边距，避免被底部导航栏遮挡 */
+.content-wrapper {
+  margin-bottom: 60px;
+}
+
+/* 自定义vant底部导航栏样式 */
+:deep(.van-tabbar-item--active) {
+  color: #07c160 !important;
+}
+
+:deep(.van-tabbar-item__icon) {
+  font-size: 22px;
+}
+
+:deep(.van-tabbar) {
+  height: 50px;
+  box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
 }
 
 .app-container {
@@ -218,77 +146,101 @@ const handleLogout = () => {
   overflow: hidden;
 }
 
-/* 顶部导航栏样式 - 绿色童真风格设计 */
+/* 全局样式重置 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 顶部导航栏样式 */
 .top-nav {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   height: 56px;
-  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  background: linear-gradient(135deg, #22c55e, #16a34a);
   display: flex;
   align-items: center;
   padding: 0 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   z-index: 100;
-  box-shadow: 0 2px 12px rgba(34, 197, 94, 0.3);
-  backdrop-filter: blur(8px);
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
 }
 
-/* 汉堡菜单图标样式 - 童真相册风格 */
+/* 汉堡菜单图标样式 */
 .menu-icon {
-  cursor: pointer;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 20px;
   width: 24px;
-  position: relative;
-  transition: var(--transition-fast);
-}
-
-.menu-icon:hover {
-  transform: scale(1.1);
+  height: 18px;
+  cursor: pointer;
+  z-index: 101;
 }
 
 .bar {
   width: 24px;
-  height: 2.5px;
-  background-color: white;
-  border-radius: 10px;
-  transition: var(--transition-fast);
-  position: relative;
+  height: 2px;
+  background-color: #ffffff;
+  border-radius: 3px;
+  transition: all 0.3s ease;
 }
 
-.menu-icon:active .bar:nth-child(2) {
-  width: 18px;
-}
-
-/* 导航菜单样式 - 童真卡片设计 */
+/* 导航菜单样式 */
 .nav-menu {
   position: fixed;
-  top: -100%;
+  top: 56px;
   left: 0;
   right: 0;
-  height: auto;
-  max-height: 80vh;
-  background-color: var(--card-background);
+  background-color: #ffffff;
   z-index: 99;
-  transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.15);
-  border-radius: 0 0 24px 24px;
-  overflow: hidden;
-  background-image: radial-gradient(var(--primary-light) 0.5px, transparent 0.5px);
-  background-size: 15px 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 10px 0;
 }
 
-.nav-open {
+/* 导航菜单项样式 */
+.nav-item {
+  padding: 16px 20px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 16px;
+  color: #333;
+  transition: background-color 0.3s ease;
+}
+
+.nav-item:hover {
+  background-color: #f5f5f5;
+}
+
+/* 内容包装器样式 */
+.content-wrapper {
+  padding-top: 56px; /* 为顶部导航栏留出空间 */
+  min-height: 100vh;
+  background-color: #fafafa;
+}
+
+/* 导航遮罩层样式 */
+.nav-overlay {
+  position: fixed;
   top: 56px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 98;
 }
 
-.nav-content {
-  padding: 12px 0;
+/* 菜单动画 */
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .nav-item {
@@ -348,7 +300,7 @@ const handleLogout = () => {
 }
 
 .content-wrapper {
-  margin-bottom: 42px;
+  margin-bottom: 50px;
   flex: 1;
   overflow-y: auto;
   background-color: #ffffff; /* 明确设置为白色背景 */
