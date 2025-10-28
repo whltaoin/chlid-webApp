@@ -1,0 +1,874 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import LoginPage from './components/LoginPage.vue';
+import AIAssistant from './components/AIAssistant.vue';
+import ProfilePage from './components/ProfilePage.vue';
+import { showToast } from 'vant';
+
+// 定义当前激活的标签页
+const active = ref('home')
+// 定义导航栏展开状态
+const isNavOpen = ref(false)
+// 定义是否已登录
+const isLoggedIn = ref(false)
+
+// 定义标签页切换事件处理函数
+  const onChange = (value: string) => {
+    // 如果不是首页且未登录，则跳转到登录页面
+    if (value !== 'home' && !isLoggedIn.value) {
+      active.value = 'login'
+    } else {
+      // 已登录或切换到首页，则正常切换
+      active.value = value
+    }
+  }
+
+// 切换导航栏显示状态
+const toggleNav = () => {
+  isNavOpen.value = !isNavOpen.value
+}
+
+// 关闭导航栏
+const closeNav = () => {
+  isNavOpen.value = false
+}
+
+// 处理登录成功
+const handleLoginSuccess = () => {
+  isLoggedIn.value = true;
+  active.value = 'profile';
+  showToast('登录成功');
+}
+
+// 处理登录取消
+const handleLoginCancel = () => {
+  active.value = 'home';
+}
+
+// 处理导航菜单项点击
+  const handleNavItemClick = (itemName: string) => {
+    if (!isLoggedIn.value) {
+      // 跳转到登录页面
+      active.value = 'login'
+    } else {
+      // 已登录，正常跳转
+      // 这里可以添加其他页面的处理逻辑
+      console.log('Navigate to:', itemName)
+    }
+  }
+
+// 处理登出
+const handleLogout = () => {
+  isLoggedIn.value = false
+  active.value = 'home'
+}
+</script>
+
+<template>
+  <div class="app-container">
+    <!-- 顶部导航栏 - 只在非登录页面显示 -->
+    <header v-if="active !== 'login'" class="top-nav">
+      <!-- 汉堡菜单图标 -->
+      <div class="menu-icon" @click="toggleNav">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+    </header>
+    
+    <!-- 导航菜单内容 - 只在非登录页面显示 -->
+    <div v-if="active !== 'login'" class="nav-menu" :class="{ 'nav-open': isNavOpen }">
+      <div class="nav-content">
+        <div class="nav-item" @click="() => { active = 'home'; closeNav() }">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-text">首页</span>
+        </div>
+        <div class="nav-item" @click="() => { active = 'ai'; closeNav() }">
+          <span class="nav-icon">🤖</span>
+          <span class="nav-text">AI助手</span>
+        </div>
+        <div class="nav-item" @click="() => { active = 'profile'; closeNav() }">
+          <span class="nav-icon">👤</span>
+          <span class="nav-text">个人中心</span>
+        </div>
+        <div class="nav-item" @click="() => { handleNavItemClick('courses'); closeNav() }">
+          <span class="nav-icon">📚</span>
+          <span class="nav-text">课程安排</span>
+        </div>
+        <div class="nav-item" @click="() => { handleNavItemClick('calendar'); closeNav() }">
+          <span class="nav-icon">📅</span>
+          <span class="nav-text">活动日历</span>
+        </div>
+        <div class="nav-item" @click="() => { handleNavItemClick('contact'); closeNav() }">
+          <span class="nav-icon">📞</span>
+          <span class="nav-text">联系我们</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 导航遮罩层 - 只在非登录页面显示 -->
+    <div 
+      v-if="active !== 'login' && isNavOpen" 
+      class="nav-overlay" 
+      @click="closeNav"
+    ></div>
+    
+    <!-- 页面内容区域 -->
+    <div v-if="active !== 'login'" class="content-wrapper">
+      <!-- 根据不同的激活标签显示不同的页面内容 -->
+      <div v-if="active === 'home'" class="home-page">
+        <!-- 首页内容 -->
+        <div class="kindergarten-header">
+          <!-- 使用背景色代替图片，避免跨域问题 -->
+          <div class="header-bg"></div>
+          <h1 class="kindergarten-name">未来之星幼儿园</h1>
+          <p class="kindergarten-slogan">科技与童真的完美融合</p>
+        </div>
+        
+        <!-- 幼儿园基本信息 -->
+        <div class="kindergarten-info">
+          <h2 class="section-title">关于我们</h2>
+          <div class="info-content">
+            <p>未来之星幼儿园创建于2010年，是一所融合科技与童真的现代化幼儿园。</p>
+            <p>我们致力于为孩子们提供一个安全、温馨且富有创意的学习环境，让每个孩子都能在快乐中成长。</p>
+          </div>
+        </div>
+        
+        <!-- 特色栏目 -->
+        <div class="features-section">
+          <h2 class="section-title">特色课程</h2>
+          <div class="features-list">
+            <div class="feature-item">
+              <div class="feature-icon">🤖</div>
+              <div class="feature-text">AI智能启蒙</div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">🎨</div>
+              <div class="feature-text">创意美术</div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">🎵</div>
+              <div class="feature-text">音乐舞蹈</div>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">🔬</div>
+              <div class="feature-text">科学探索</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- AI助手页面组件 -->
+      <AIAssistant v-if="active === 'ai'" />
+      
+      <!-- 个人中心页面组件 -->
+      <ProfilePage 
+        v-if="active === 'profile'" 
+        :isLoggedIn="isLoggedIn"
+        @login="active = 'login'"
+        @logout="handleLogout"
+      />
+    </div>
+    
+    <!-- 登录页面组件 -->
+    <LoginPage 
+      v-if="active === 'login'" 
+      :onLoginSuccess="handleLoginSuccess"
+      :onCancel="handleLoginCancel"
+    />
+    
+    <!-- 底部导航栏 - 只在非登录页面显示 -->
+    <van-tabbar v-if="active !== 'login'" v-model="active" @change="onChange" >
+      <van-tabbar-item name="home" icon="home-o">
+        首页
+      </van-tabbar-item>
+      <van-tabbar-item name="ai" icon="chat-o">
+        AI助手
+      </van-tabbar-item>
+      <van-tabbar-item name="profile" icon="user-o">
+        个人
+      </van-tabbar-item>
+    </van-tabbar>
+  </div>
+</template>
+
+<style scoped>
+/* 全局文本颜色设置 - 提高对比度确保可见性 */
+:deep(*) { color: #333333 !important; }
+
+/* 特殊元素颜色保持不变 */
+:deep(.van-tabbar-item--active),
+:deep(.van-tabbar-item--active .van-icon),
+.kindergarten-name,
+.kindergarten-slogan,
+.nav-text {
+  color: inherit !important;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--background-color);
+  border: none;
+  outline: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* 顶部导航栏样式 - 绿色童真风格设计 */
+.top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(34, 197, 94, 0.3);
+  backdrop-filter: blur(8px);
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+
+/* 汉堡菜单图标样式 - 童真相册风格 */
+.menu-icon {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 20px;
+  width: 24px;
+  position: relative;
+  transition: var(--transition-fast);
+}
+
+.menu-icon:hover {
+  transform: scale(1.1);
+}
+
+.bar {
+  width: 24px;
+  height: 2.5px;
+  background-color: white;
+  border-radius: 10px;
+  transition: var(--transition-fast);
+  position: relative;
+}
+
+.menu-icon:active .bar:nth-child(2) {
+  width: 18px;
+}
+
+/* 导航菜单样式 - 童真卡片设计 */
+.nav-menu {
+  position: fixed;
+  top: -100%;
+  left: 0;
+  right: 0;
+  height: auto;
+  max-height: 80vh;
+  background-color: var(--card-background);
+  z-index: 99;
+  transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.15);
+  border-radius: 0 0 24px 24px;
+  overflow: hidden;
+  background-image: radial-gradient(var(--primary-light) 0.5px, transparent 0.5px);
+  background-size: 15px 15px;
+}
+
+.nav-open {
+  top: 56px;
+}
+
+.nav-content {
+  padding: 12px 0;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  transition: var(--transition-fast);
+  border-radius: 16px;
+  margin: 4px 12px;
+  position: relative;
+  overflow: hidden;
+  background-color: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.nav-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
+}
+
+.nav-item:active {
+  background-color: var(--primary-light);
+  transform: translateY(0);
+}
+
+.nav-icon {
+  font-size: 24px;
+  margin-right: 16px;
+  width: 28px;
+  text-align: center;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
+}
+
+.nav-text {
+  font-size: 16px;
+  color: var(--text-color);
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* 导航遮罩层 - 童真柔和渐变 */
+.nav-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, rgba(34, 197, 94, 0.1), rgba(132, 204, 22, 0.05));
+  z-index: 98;
+  animation: fadeIn 0.3s ease;
+  backdrop-filter: blur(3px);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.content-wrapper {
+  margin-bottom: 42px;
+  flex: 1;
+  overflow-y: auto;
+  background-color: #ffffff; /* 明确设置为白色背景 */
+  position: relative;
+  z-index: 1;
+  margin-top: 56px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(37, 99, 235, 0.3) transparent;
+}
+
+/* 确保登录页面占满整个容器 */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--background-color);
+  border: none;
+  outline: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* 确保页面背景始终为浅色 */
+.home-page, .ai-page, .profile-page {
+  background-color: #ffffff !important;
+}
+
+/* 简单页面标题样式 */
+.simple-page-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary-color);
+  text-align: center;
+  margin: 20px 0;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  border-radius: 20px;
+  margin: 16px;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+/* 个人中心样式 */
+.profile-info {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  margin: 16px;
+  background-color: #f0fdf4;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.1);
+  border: 2px solid var(--primary-light);
+}
+
+.avatar {
+  font-size: 64px;
+  margin-right: 20px;
+  background-color: white;
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.user-basic-info {
+  flex: 1;
+}
+
+.user-name {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 8px 0;
+}
+
+.user-id {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+/* 确保所有卡片和容器都有浅色背景 */
+.kindergarten-info, .features-section {
+  background-color: #f0fdf4 !important;
+}
+
+.content-wrapper::-webkit-scrollbar {
+  width: 4px;
+}
+
+.content-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content-wrapper::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
+  border-radius: 10px;
+}
+
+/* 首页样式 - 科技感布局 */
+.home-page {
+  padding: 0;
+  margin-top: 0;
+}
+
+/* 头部区域 - 绿色童真风格渐变背景 */
+.kindergarten-header {
+  position: relative;
+  text-align: center;
+  color: white;
+  height: 240px;
+  overflow: hidden;
+  border-bottom-left-radius: 30px;
+  border-bottom-right-radius: 30px;
+}
+
+.header-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  overflow: hidden;
+}
+
+/* 童真风格云朵装饰 */
+.header-bg::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 10%;
+  width: 60px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  box-shadow: 
+    80px 20px 0 0 rgba(255, 255, 255, 0.2),
+    40px 30px 0 0 rgba(255, 255, 255, 0.2),
+    120px 40px 0 0 rgba(255, 255, 255, 0.2);
+  animation: float 10s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(20px) translateY(-10px); }
+}
+
+/* 童真风格太阳效果 */
+.header-bg::after {
+  content: '☀️';
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  font-size: 40px;
+  animation: spin 20s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.kindergarten-name {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 32px;
+  font-weight: 800;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+  margin: 0;
+  letter-spacing: 0.8px;
+  color: white;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 12px 20px;
+  border-radius: 24px;
+  backdrop-filter: blur(8px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  /* 添加可爱的装饰性星星 */
+  text-decoration: none;
+}
+
+.kindergarten-name::before,
+.kindergarten-name::after {
+  content: '⭐';
+  font-size: 20px;
+  margin: 0 8px;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.kindergarten-slogan {
+  position: absolute;
+  top: 70%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 16px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  margin: 0;
+  font-weight: 500;
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 6px 12px;
+  border-radius: 15px;
+  backdrop-filter: blur(3px);
+}
+
+/* 信息卡片 - 童真风格设计 */
+.kindergarten-info, .features-section {
+  padding: 24px;
+  background-color: #f0fdf4;
+  margin-bottom: 20px;
+  border-radius: 28px;
+  margin-left: 16px;
+  margin-right: 16px;
+  margin-top: 20px;
+  box-shadow: 0 6px 24px rgba(34, 197, 94, 0.15);
+  border: 3px solid var(--primary-light);
+  position: relative;
+  overflow: hidden;
+  /* 添加可爱的动物足迹装饰 */
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2Z' fill='%2384cc16' fill-opacity='0.2'/%3E%3Cpath d='M8 8C9.1 8 10 8.9 10 10C10 11.1 9.1 12 8 12C6.9 12 6 11.1 6 10C6 8.9 6.9 8 8 8Z' fill='%2384cc16' fill-opacity='0.2'/%3E%3Cpath d='M16 8C17.1 8 18 8.9 18 10C18 11.1 17.1 12 16 12C14.9 12 14 11.1 14 10C14 8.9 14.9 8 16 8Z' fill='%2384cc16' fill-opacity='0.2'/%3E%3C/svg%3E");
+  background-size: 40px 40px;
+  z-index: 1;
+}
+
+.kindergarten-info::before, .features-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+}
+
+/* 标题样式 - 增强童真风格 */
+.section-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 20px;
+  position: relative;
+  padding-left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* 添加可爱的装饰图标 */
+}
+
+.section-title::before {
+  content: '✨';
+  font-size: 20px;
+  animation: twinkle 2s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+.section-title::after {
+  content: '';
+  flex-grow: 1;
+  height: 2px;
+  background: linear-gradient(to right, var(--primary-color), var(--secondary-color), transparent);
+  margin-left: 12px;
+  opacity: 0.5;
+}
+
+.info-content p {
+  color: #1f2937;
+  line-height: 1.7;
+  margin-bottom: 16px;
+  font-size: 16px;
+  font-weight: 500;
+  background-color: white;
+  padding: 12px 16px;
+  border-radius: 16px;
+  border-left: 4px solid var(--primary-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* 特色课程网格布局 */
+.features-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+/* 特色课程项 - 增强童真风格卡片 */
+.feature-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 16px;
+  background-color: white; /* 白色背景更符合童真风格 */
+  border-radius: 24px;
+  transition: var(--transition-normal);
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.15);
+  border: 3px solid var(--primary-light);
+  position: relative;
+  overflow: hidden;
+  transform: perspective(1000px) rotateX(5deg);
+  /* 添加可爱的云朵图案装饰 */
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='10' cy='10' r='1' fill='%2322c55e' fill-opacity='0.2'/%3E%3C/svg%3E");
+  /* 设置固定高度确保所有模块一致 */
+  height: 200px;
+  justify-content: space-between;
+}
+
+.feature-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+.feature-item:hover {
+  transform: perspective(1000px) rotateX(0deg) translateY(-5px);
+  box-shadow: 0 10px 24px rgba(34, 197, 94, 0.15);
+}
+
+.feature-item:active {
+  transform: perspective(1000px) rotateX(0deg) translateY(0);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.1);
+}
+
+.feature-item:active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(34, 197, 94, 0.08);
+}
+
+.feature-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+  filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.15));
+  transform: scale(1);
+  transition: transform 0.3s ease, rotate 0.3s ease;
+  background-color: white;
+  border-radius: 50%;
+  padding: 10px;
+  border: 3px dashed var(--primary-color);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+  /* 确保图标区域大小一致 */
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feature-item:hover .feature-icon {
+  transform: scale(1.2);
+  rotate: 10deg;
+  animation: wiggle 0.5s ease-in-out;
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: scale(1.2) rotate(0deg); }
+  25% { transform: scale(1.2) rotate(-5deg); }
+  50% { transform: scale(1.2) rotate(5deg); }
+  75% { transform: scale(1.2) rotate(-5deg); }
+}
+
+.feature-text {
+  font-size: 16px;
+  color: #1e3a8a; /* 深蓝色确保在浅色背景上清晰可见 */
+  font-weight: 600;
+  text-align: center;
+  padding: 8px 12px;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--primary-light);
+  /* 确保文本区域大小一致 */
+  width: 100%;
+  margin: 0;
+}
+
+/* 其他页面样式 */
+.ai-page, .profile-page {
+  padding: 24px;
+  text-align: center;
+  min-height: 100%;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 12px;
+  position: relative;
+  display: inline-block;
+}
+
+.page-title::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  border-radius: 20px;
+}
+
+.page-description {
+  color: var(--text-color-secondary);
+  line-height: 1.7;
+  font-size: 14px;
+}
+
+/* 底部导航栏样式调整 - 童真风格 */
+:deep(.van-tabbar) {
+  background-color: white;
+  box-shadow: 0 -4px 20px rgba(34, 197, 94, 0.1);
+  border-top: 2px solid var(--primary-light);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding-top: 8px;
+  padding-bottom: env(safe-area-inset-bottom, 8px);
+}
+
+:deep(.van-tabbar-item--active) {
+  color: var(--primary-color) !important;
+}
+
+/* 底部导航栏激活图标渐变效果 - 童真风格 */
+:deep(.van-tabbar-item--active .van-icon) {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+/* 保留登录按钮样式，因为在个人中心页面仍会使用 */
+.login-button {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 20px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.login-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
+}
+
+.login-button:active {
+  transform: translateY(0);
+}
+
+/* 已登录状态下在个人中心显示登出按钮 */
+.logout-button {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.logout-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}
+
+.logout-button:active {
+  transform: translateY(0);
+}
+
+/* 登录提示样式 */
+.login-prompt {
+  text-align: center;
+  padding: 40px 20px;
+  background-color: #f0fdf4;
+  margin: 20px 16px;
+  border-radius: 20px;
+  border: 2px dashed var(--primary-light);
+}
+
+.login-prompt p {
+  font-size: 16px;
+  color: var(--text-color);
+  margin: 0;
+}
+  </style>
