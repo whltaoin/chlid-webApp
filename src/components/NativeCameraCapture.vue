@@ -1,14 +1,9 @@
 <script setup lang="ts">
-import { ref, watch, onUnmounted, nextTick, onMounted } from 'vue';
-// 使用类型断言而非模块扩展开销
-// @ts-ignore - 暂时忽略模块类型检查
-import VueMediaRecorder from 'vue-media-recorder';
-import 'vue-media-recorder/dist/vue-media-recorder.css';
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 
 // 定义属性和事件
 const props = defineProps<{
   modelValue: string;
-  showPermissionGuide?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -16,6 +11,7 @@ const emit = defineEmits<{
   'camera-permission-requested': [];
   'camera-permission-granted': [];
   'camera-permission-denied': [error: Error];
+  'permission-request-end': [];
 }>();
 
 // 响应式数据
@@ -26,20 +22,29 @@ const isMobile = ref(false);
 const permissionDeniedBefore = ref(false);
 const permissionRequestInProgress = ref(false);
 const hasUserInteraction = ref(false);
-const mediaRecorder = ref<any>(null);
-const isRecording = ref(false);
-const capturedImage = ref('');
+const stream = ref<MediaStream | null>(null);
+const videoElement = ref<HTMLVideoElement | null>(null);
+const isSwitchingCamera = ref(false);
+let currentCamera: 'user' | 'environment' = 'user';
 
-// 更精确的移动设备检测
+// 设备检测 - 更精确的设备识别
+let isChromeIOS = false;
+
 const checkIfMobile = () => {
-  // 结合用户代理和设备尺寸检测
   const hasTouchScreen = ('ontouchstart' in window) || 
                         (navigator.maxTouchPoints > 0) ||
                         ((navigator as any).msMaxTouchPoints > 0);
   const isSmallScreen = window.innerWidth <= 768;
   const agentMatch = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
   
+  isChromeIOS = isIOS && /CriOS/i.test(navigator.userAgent);
   isMobile.value = (hasTouchScreen && isSmallScreen) || agentMatch;
+  
+  // 移动设备默认使用后置摄像头
+  if (isMobile.value) {
+    currentCamera = 'environment';
+  }
 };
 
 // 处理用户交互事件
@@ -66,66 +71,157 @@ onUnmounted(() => {
   document.removeEventListener('click', handleUserInteraction);
   document.removeEventListener('touchstart', handleUserInteraction);
   window.removeEventListener('resize', checkIfMobile);
+  stopStream();
 });
 
+// 停止视频流
+const stopStream = () => {
+  if (stream.value) {
+    stream.value.getTracks().forEach(track => track.stop());
+    stream.value = null;
+  }
+};
+
 // 打开相机模态框
-const openCameraModal = () => {
+const openCameraModal = async () => {
   isModalVisible.value = true;
-  // 等待模态框完全显示后再初始化
-  nextTick(() => {
-    // 如果是移动设备且尚未有用户交互，提示用户点击以授权
-    if (isMobile.value && !hasUserInteraction.value) {
-      hasCameraError.value = true;
-      errorMessage.value = '需要用户交互才能访问摄像头，请点击下方重试按钮';
-    }
-  });
+  
+  // 等待模态框完全显示后再初始化摄像头
+  await nextTick();
+  
+  // 如果是移动设备且尚未有用户交互，提示用户点击以授权
+  if (isMobile.value && !hasUserInteraction.value) {
+    hasCameraError.value = true;
+    errorMessage.value = '需要用户交互才能访问摄像头，请点击下方重试按钮';
+    return;
+  }
+  
+  // 尝试初始化摄像头
+  initCamera();
 };
 
 // 关闭相机模态框
 const closeCameraModal = () => {
   isModalVisible.value = false;
-  if (mediaRecorder.value) {
-    mediaRecorder.value.stop();
+  stopStream();
+};
+
+// 初始化摄像头
+const initCamera = async () => {
+  if (!hasUserInteraction.value || permissionRequestInProgress.value) {
+    return;
+  }
+  
+  hasCameraError.value = false;
+  errorMessage.value = '';
+  permissionRequestInProgress.value = true;
+  emit('camera-permission-requested');
+  
+  try {
+    // 首先停止现有流
+    stopStream();
+    
+    // 获取媒体设备配置 - 针对不同设备的优化配置
+    let constraints: MediaStreamConstraints;
+    
+    // iOS Chrome的特殊处理
+    if (isChromeIOS) {
+      // iOS Chrome需要最简配置，使用固定参数而非facingMode
+      constraints = {
+        video: true,
+        audio: false
+      };
+    } else {
+      // 其他设备使用标准配置
+      constraints = {
+        video: {
+          facingMode: currentCamera
+        },
+        audio: false
+      };
+    }
+    
+    // 对于普通移动设备的基础配置
+    if (isMobile.value && !isChromeIOS) {
+      constraints.video = { facingMode: currentCamera };
+    }
+    
+    // 尝试获取媒体流 - 处理iOS Chrome特殊情况
+    if (isChromeIOS) {
+      // iOS Chrome可能需要更直接的方式
+      try {
+        stream.value = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false
+        });
+      } catch (firstError) {
+        // 如果失败，尝试切换摄像头方向
+        console.warn('第一次尝试失败，尝试切换摄像头方向:', firstError);
+        // 在iOS Chrome中，我们无法直接控制facingMode，让系统自动选择
+        stream.value = await navigator.mediaDevices.getUserMedia({
+          video: { width: 640, height: 480 },
+          audio: false
+        });
+      }
+    } else {
+      stream.value = await navigator.mediaDevices.getUserMedia(constraints);
+    }
+    
+    // 设置视频源
+    if (videoElement.value && stream.value) {
+      try {
+        // 先移除现有的源，避免资源泄漏
+        if (videoElement.value.srcObject) {
+          videoElement.value.srcObject = null;
+        }
+        
+        // 设置新的流
+        videoElement.value.srcObject = stream.value;
+        
+        // 移动设备上显式播放
+        if (isMobile.value) {
+          await videoElement.value.play();
+        } else {
+          videoElement.value.play().catch(e => {
+            console.warn('视频自动播放失败，这可能是因为浏览器策略限制:', e);
+          });
+        }
+      } catch (playError) {
+        console.error('视频播放错误:', playError);
+      }
+    }
+    
+    emit('camera-permission-granted');
+    permissionDeniedBefore.value = false;
+    
+  } catch (error: any) {
+    handleCameraError(error);
+  } finally {
+    permissionRequestInProgress.value = false;
+    emit('permission-request-end');
   }
 };
 
-// 处理摄像头初始化
-const handleRecorderReady = (recorder: any) => {
-  mediaRecorder.value = recorder;
-  hasCameraError.value = false;
-  errorMessage.value = '';
-  emit('camera-permission-granted');
-  permissionDeniedBefore.value = false;
-  
-  // 确保视频元素正确显示
-  setTimeout(() => {
-    const videoElement = document.querySelector('.camera-video') as HTMLVideoElement;
-    if (videoElement) {
-      videoElement.style.display = 'block';
-    }
-  }, 100);
-};
-
 // 处理摄像头错误
-const handleRecorderError = (error: Error | any) => {
+const handleCameraError = (error: Error) => {
   console.error('摄像头错误:', error);
   hasCameraError.value = true;
   emit('camera-permission-denied', error);
   
-  // 首先检查浏览器是否支持媒体设备API
+  // 检查浏览器是否支持媒体设备API
   if (!checkMediaSupport()) {
     errorMessage.value = '您的浏览器不支持摄像头访问功能。\n\n请使用以下现代浏览器的最新版本:\n• Google Chrome\n• Mozilla Firefox\n• Apple Safari\n• Microsoft Edge';
     return;
   }
   
-  // 获取错误类型
-  const errorName = error.name || error.error?.name || '';
-  const errorMessageText = error.message || error.error?.message || JSON.stringify(error);
+  const errorName = (error as any).name || '';
+  const errorMessageText = error.message || JSON.stringify(error);
   
   // 处理各种错误类型
   if (errorName === 'NotAllowedError' || errorMessageText.includes('权限') || errorMessageText.includes('permission')) {
     permissionDeniedBefore.value = true;
-    // 根据设备类型提供不同的错误信息，更详细的引导
+    
+    // 根据设备类型提供不同的错误信息
     if (isMobile.value) {
       if (/Android/i.test(navigator.userAgent)) {
         errorMessage.value = '需要摄像头权限才能使用此功能。\n\n请按以下步骤操作:\n1. 打开设备设置\n2. 找到应用权限或隐私设置\n3. 选择相机权限\n4. 允许此网站访问相机';
@@ -157,61 +253,81 @@ const handleRecorderError = (error: Error | any) => {
   }
 };
 
-// 处理权限请求开始
-const handlePermissionRequest = () => {
-  permissionRequestInProgress.value = true;
-  emit('camera-permission-requested');
-};
-
-// 处理权限请求结束
-const handlePermissionRequestEnd = () => {
-  permissionRequestInProgress.value = false;
-};
-
-// 简化的拍照功能，确保更好的兼容性
-const capturePhoto = async () => {
-  if (hasCameraError.value || permissionRequestInProgress.value || !mediaRecorder.value) return;
+// 切换摄像头
+const toggleCamera = async () => {
+  if (isSwitchingCamera.value || permissionRequestInProgress.value) return;
+  
+  isSwitchingCamera.value = true;
   
   try {
-    // 尝试使用takeSnapshot方法
-    let snapshot;
-    try {
-      snapshot = await mediaRecorder.value.takeSnapshot();
-    } catch (snapshotError) {
-      console.warn('takeSnapshot失败，尝试使用备用方法:', snapshotError);
-      // 备用方法：直接从video元素获取画面
-        const videoElement = document.querySelector('.camera-video') as HTMLVideoElement;
-        if (videoElement) {
-          const canvas = document.createElement('canvas');
-          canvas.width = videoElement.videoWidth || 640;
-          canvas.height = videoElement.videoHeight || 480;
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            // 处理镜像
-            if (!isMobile.value) {
-              ctx.translate(canvas.width, 0);
-              ctx.scale(-1, 1);
-              ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-            } else {
-              ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-            }
-            snapshot = canvas.toDataURL('image/jpeg', 0.8);
-          }
-        }
+      // 切换摄像头类型
+      currentCamera = currentCamera === 'user' ? 'environment' : 'user';
+      
+      // 重新初始化摄像头
+      await initCamera();
+    } catch (error) {
+      console.error('切换摄像头失败:', error);
+      // 如果切换失败，恢复原来的摄像头类型
+      currentCamera = currentCamera === 'user' ? 'environment' : 'user';
+    } finally {
+    isSwitchingCamera.value = false;
+  }
+};
+
+// 拍照功能
+const capturePhoto = async () => {
+  if (!videoElement.value || hasCameraError.value || permissionRequestInProgress.value) {
+    return;
+  }
+  
+  try {
+    // 创建canvas元素
+    const canvas = document.createElement('canvas');
+    const video = videoElement.value;
+    
+    // 设置canvas尺寸与视频一致
+    const videoWidth = video.videoWidth;
+    const videoHeight = video.videoHeight;
+    
+    if (videoWidth && videoHeight) {
+      canvas.width = videoWidth;
+      canvas.height = videoHeight;
+    } else {
+      // 回退到默认尺寸
+      canvas.width = 1280;
+      canvas.height = 720;
     }
     
-    if (snapshot) {
-      // 更新绑定的值
-      emit('update:modelValue', snapshot);
-      
-      // 关闭模态框
-      closeCameraModal();
-    } else {
-      throw new Error('无法捕获图像');
+    // 获取canvas上下文
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('无法获取canvas上下文');
     }
+    
+    // 考虑镜像效果和设备差异
+    if (currentCamera === 'user' && !isMobile.value) {
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    } else {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    }
+    
+    // 转换为base64格式
+    const imageData = canvas.toDataURL('image/jpeg', 0.9);
+    
+    // 更新绑定的值
+    emit('update:modelValue', imageData);
+    
+    // 关闭模态框
+    closeCameraModal();
   } catch (error) {
     console.error('拍照失败:', error);
-    errorMessage.value = '拍照失败，请重试';
+    if (isChromeIOS) {
+      errorMessage.value = 'iOS Chrome拍照功能受限，请尝试使用Safari浏览器。';
+    } else {
+      errorMessage.value = '拍照失败，请重试';
+    }
     hasCameraError.value = true;
   }
 };
@@ -219,14 +335,34 @@ const capturePhoto = async () => {
 // 重新拍摄
 const retakePhoto = () => {
   emit('update:modelValue', '');
+  // 重新打开摄像头
+  setTimeout(() => {
+    openCameraModal();
+  }, 100);
 };
 
-// 获取媒体设备配置 - 简化配置以提高兼容性
-const getMediaConstraints = () => {
-  // 使用最基础的媒体约束配置，确保最大兼容性
-  return {
-    video: true // 使用默认配置，让浏览器自动选择合适的摄像头
-  };
+// 处理视频元素错误
+const handleVideoError = (event: Event) => {
+  console.error('视频元素错误:', event);
+  hasCameraError.value = true;
+  
+  // 根据设备显示不同的错误信息
+  if (isChromeIOS) {
+    errorMessage.value = 'iOS Chrome浏览器摄像头访问受限，请尝试使用Safari浏览器或检查隐私设置。';
+  } else {
+    errorMessage.value = '视频加载失败，请检查摄像头是否正常工作。';
+  }
+};
+
+// 处理视频可以播放事件 - 特别是对iOS设备很重要
+const handleVideoCanPlay = () => {
+  console.log('视频可以播放');
+  hasCameraError.value = false;
+};
+
+// 处理视频数据加载事件
+const handleVideoLoadedData = () => {
+  console.log('视频数据已加载');
 };
 
 // 检查浏览器是否支持媒体设备API
@@ -237,38 +373,25 @@ const checkMediaSupport = () => {
 // 重试初始化摄像头
 const retryCamera = () => {
   if (hasUserInteraction.value && isModalVisible.value) {
-    hasCameraError.value = false;
-    
-    // 重置组件状态
-    mediaRecorder.value = null;
-    
-    // 强制重新渲染组件 - 使用更简单的方法
-    nextTick(() => {
-      // 直接刷新模态框内的内容
-      const cameraFrame = document.querySelector('.camera-frame');
-      if (cameraFrame) {
-        const tempContent = cameraFrame.innerHTML;
-        cameraFrame.innerHTML = '';
-        setTimeout(() => {
-          cameraFrame.innerHTML = tempContent;
-        }, 0);
-      }
-    });
+    initCamera();
   }
 };
 
-// 监听模态框关闭事件
-watch(() => isModalVisible.value, (newValue) => {
-  if (!newValue) {
-    if (mediaRecorder.value) {
-      mediaRecorder.value.stop();
-    }
+// 检查是否有多个摄像头可用
+const checkMultipleCameras = async (): Promise<boolean> => {
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const videoDevices = devices.filter(device => device.kind === 'videoinput');
+    return videoDevices.length >= 2;
+  } catch (error) {
+    console.warn('无法枚举设备:', error);
+    return false;
   }
-});
+};
 </script>
 
 <template>
-  <div class="camera-capture">
+  <div class="native-camera-capture">
     <!-- 图片显示区域 -->
     <div class="image-preview-container">
       <div 
@@ -322,36 +445,33 @@ watch(() => isModalVisible.value, (newValue) => {
         
         <div class="camera-body">
           <div class="camera-frame">
-            <!-- 使用vue-media-recorder组件 -->
-            <VueMediaRecorder
-              v-if="isModalVisible && !hasCameraError && checkMediaSupport()"
-              class="vue-media-recorder"
-              :options="{
-                video: getMediaConstraints().video,
-                audio: false
+            <!-- 视频元素 -->
+            <video
+              v-if="!hasCameraError && checkMediaSupport()"
+              ref="videoElement"
+              autoplay
+              playsinline
+              muted
+              class="camera-video"
+              :style="{ 
+                transform: currentCamera === 'user' && !isMobile ? 'scaleX(-1)' : 'scaleX(1)',
+                objectFit: 'cover'
               }"
-              @recorder-ready="handleRecorderReady"
-              @error="handleRecorderError"
-              @permission-request="handlePermissionRequest"
-              @permission-request-end="handlePermissionRequestEnd"
-            >
-              <template #video="{ stream }">
-                <video
-                  :srcObject="stream"
-                  autoplay
-                  playsinline
-                  muted
-                  class="camera-video"
-                  :style="{ transform: isMobile ? 'scaleX(1)' : 'scaleX(-1)' }"
-                  width="100%"
-                  height="100%"
-                ></video>
-              </template>
-            </VueMediaRecorder>
+              width="100%"
+              height="100%"
+              :capture="isMobile ? 'environment' : undefined"
+              @error="handleVideoError"
+              @canplay="handleVideoCanPlay"
+              @loadeddata="handleVideoLoadedData"
+            ></video>
             
             <!-- 相机错误提示或浏览器不支持 -->
             <div v-if="hasCameraError || !checkMediaSupport()" class="camera-error">
               <p class="error-text">{{ errorMessage || '无法访问摄像头，请确保已授予权限' }}</p>
+              <div v-if="isChromeIOS" class="ios-tip">
+                <p class="tip-text">提示：iOS Chrome浏览器可能限制摄像头访问</p>
+                <p class="tip-text">建议：请尝试使用Safari浏览器或检查Chrome的相机访问权限</p>
+              </div>
               
               <!-- 针对移动设备的详细权限引导 -->
               <div v-if="permissionDeniedBefore && isMobile" class="permission-guide">
@@ -395,6 +515,16 @@ watch(() => isModalVisible.value, (newValue) => {
             <div v-if="!hasCameraError" class="camera-instructions">
               <p>{{ isMobile ? '请将接送人置于框内拍摄' : '请将被接送人置于框内' }}</p>
             </div>
+            
+            <!-- 摄像头切换按钮 -->
+            <button 
+              v-if="!hasCameraError && isMobile" 
+              @click="toggleCamera" 
+              class="camera-toggle-button"
+              :disabled="isSwitchingCamera"
+            >
+              切换摄像头
+            </button>
           </div>
         </div>
         
@@ -420,7 +550,7 @@ watch(() => isModalVisible.value, (newValue) => {
 
 <style scoped>
 /* 基础容器样式 */
-.camera-capture {
+.native-camera-capture {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -617,11 +747,6 @@ watch(() => isModalVisible.value, (newValue) => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scaleX(-1); /* 镜像显示，更符合自拍体验 */
-}
-
-.hidden-canvas {
-  display: none;
 }
 
 /* 相机错误提示 */
@@ -648,6 +773,21 @@ watch(() => isModalVisible.value, (newValue) => {
   line-height: 1.6;
   white-space: pre-line;
   font-weight: 500;
+}
+
+.ios-tip {
+  background-color: #fff9c4;
+  border: 1px solid #ffeb3b;
+  border-radius: 4px;
+  padding: 12px;
+  margin-top: 16px;
+}
+
+.tip-text {
+  color: #f57c00;
+  margin: 4px 0;
+  font-size: 14px;
+  text-align: left;
 }
 
 .permission-guide {
@@ -695,9 +835,29 @@ watch(() => isModalVisible.value, (newValue) => {
   margin-bottom: 16px;
 }
 
-/* 优化移动设备上的视频样式 */
-  /* 移动设备样式保持不变，transform由内联样式控制 */
+/* 摄像头切换按钮 */
+.camera-toggle-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 8px 12px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
 
+.camera-toggle-button:hover:not(:disabled) {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.camera-toggle-button:disabled {
+  background-color: rgba(0, 0, 0, 0.3);
+  cursor: not-allowed;
+}
 
 /* 优化按钮样式 */
 .capture-button:disabled {
@@ -717,8 +877,13 @@ watch(() => isModalVisible.value, (newValue) => {
   transition: background-color 0.2s ease;
 }
 
-.retry-button:hover {
+.retry-button:hover:not(:disabled) {
   background-color: #2f3542;
+}
+
+.retry-button:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
 }
 
 /* 相机使用提示 */

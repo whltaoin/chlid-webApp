@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { useUserStore } from '../stores/userStore';
 import SafetyOverviewPage from '../views/SafetyOverviewPage.vue';
 import TemporaryPickupPage from '../views/TemporaryPickupPage.vue';
+import ExpiryWarningPage from '../views/ExpiryWarningPage.vue';
 
 // 定义路由配置
 const routes = [
@@ -28,6 +29,7 @@ const routes = [
   { path: '/danger-behaviors', name: 'dangerBehaviors', component: () => import('../views/DangerBehaviorPage.vue'), meta: { requiresAuth: true } },
   { path: '/safety-overview', name: 'safetyOverview', component: SafetyOverviewPage, meta: { requiresAuth: true } },
   { path: '/temporary-pickup', name: 'temporaryPickup', component: TemporaryPickupPage, meta: { requiresAuth: true } },
+  { path: '/expiry-warning', name: 'expiryWarning', component: ExpiryWarningPage, meta: { requiresAuth: true } },
   {
     path: '/profile',
     name: 'profile',

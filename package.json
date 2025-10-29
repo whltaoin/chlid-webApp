@@ -12,6 +12,7 @@
     "pinia": "^3.0.3",
     "vant": "^4.9.21",
     "vue": "^3.5.22",
+    "vue-media-recorder": "^0.1.25",
     "vue-router": "^4.6.3"
   },
   "devDependencies": {

@@ -32,6 +32,11 @@ const logout = () => {
   userStore.logout();
   router.push({ name: 'login' });
 };
+
+// 跳转到预警信息页面
+const goToExpiryWarning = () => {
+  router.push({ name: 'expiryWarning' });
+};
 </script>
 
 <template>
@@ -66,6 +71,12 @@ const logout = () => {
           <div class="feature-icon">👤</div>
           <div class="feature-title">个人资料</div>
           <div class="feature-desc">管理个人信息</div>
+        </div>
+        
+        <div class="feature-card" @click="goToExpiryWarning">
+          <div class="feature-icon">⚠️</div>
+          <div class="feature-title">预警信息</div>
+          <div class="feature-desc">查看物品到期预警</div>
         </div>
       </div>
     </div>

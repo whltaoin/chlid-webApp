@@ -63,12 +63,7 @@ onUnmounted(() => {
       
       <!-- 导航菜单内容 - 使用vue-router进行导航 -->
       <div v-if="isNavOpen" class="nav-menu">
-        <!-- <div class="nav-item" @click="handleNavItemClick('home')">
-          <span>🏠 首页</span>
-        </div>
-        <div class="nav-item" @click="handleNavItemClick('aiAssistant')">
-          <span>🤖 AI助手</span>
-        </div> -->
+       
         <div class="nav-item" @click="handleNavItemClick('checkIn')">
           <span>📋 入离园管理</span>
         </div>
@@ -81,9 +76,10 @@ onUnmounted(() => {
         <div class="nav-item" @click="handleNavItemClick('temporaryPickup')">
           <span>📋 临时接送</span>
         </div>
-        <!-- <div class="nav-item" @click="handleNavItemClick('profile')">
-          <span>👤 个人中心</span>
-        </div> -->
+        <div class="nav-item" @click="handleNavItemClick('expiryWarning')">
+          <span>⚠️ 预警信息</span>
+        </div>
+      
       </div>
       
       <!-- 导航遮罩层 -->

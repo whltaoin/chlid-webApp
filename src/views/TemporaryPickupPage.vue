@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import CameraCapture from '@/components/CameraCapture.vue';
+import NativeCameraCapture from '@/components/NativeCameraCapture.vue';
 
 // 路由实例
 const router = useRouter();
@@ -101,7 +101,7 @@ onMounted(() => {
         <div class="modal-body">
           <!-- 摄像头拍照组件 -->
           <div class="camera-capture-section">
-            <CameraCapture 
+            <NativeCameraCapture 
               v-model="capturedImage" 
               @update:modelValue="handleImageChange"
             />
