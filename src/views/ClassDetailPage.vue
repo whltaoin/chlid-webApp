@@ -171,7 +171,6 @@ const getStats = () => {
 <style scoped>
 .class-detail-page {
   max-width: 1000px;
-  margin: 0 auto 120px;
   padding: 80px 20px 20px; /* 添加顶部内边距，避免内容被固定头部遮挡 */
 }
 
@@ -223,6 +222,7 @@ h1 {
   margin-bottom: 30px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease;
+  padding-top: 20px;
 }
 
 .stats-card:hover {

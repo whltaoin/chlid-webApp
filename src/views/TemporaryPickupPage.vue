@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import NativeCameraCapture from '@/components/NativeCameraCapture.vue';
-
+import { showToast } from 'vant';
 // 路由实例
 const router = useRouter();
 
@@ -59,7 +59,7 @@ const submitNewPickup = () => {
       !pickupForm.value.pickupRelationship?.trim() || 
       !pickupForm.value.pickupDate || 
       !pickupForm.value.reason?.trim()) {
-    alert('请填写完整的接送信息');
+   
     return;
   }
   
@@ -76,7 +76,8 @@ const submitNewPickup = () => {
   });
   
   // 显示成功消息
-  alert('临时接送申请提交成功！');
+  showToast('临时接送申请提交成功！');
+
   
   // 重置表单
   resetForm();
@@ -167,13 +168,15 @@ onMounted(() => {
                 class="form-textarea"
               ></textarea>
             </div>
+
+               <button @click="resetForm" class="reset-button">重置</button>
+          <button @click="submitNewPickup" class="submit-button">提交</button>
+           
           </form>
+           
         </div>
         
-        <div class="form-footer">
-          <button @click="resetForm" class="reset-button">重置</button>
-          <button @click="submitNewPickup" class="submit-button">提交</button>
-        </div>
+      
       </div>
     
   </div>
@@ -326,6 +329,7 @@ h1 {
     width: 95%;
     margin: 0 auto 100px;
     padding: 20px;
+    padding-bottom: 80px;
   }
   
   .form-footer {

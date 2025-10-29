@@ -166,7 +166,6 @@ const submitLeaveRequest = () => {
 <style scoped>
 .safety-overview-page {
   max-width: 800px;
-  margin: 0 auto 120px;
   padding: 20px;
 }
 

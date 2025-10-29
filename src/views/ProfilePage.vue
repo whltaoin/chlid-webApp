@@ -196,7 +196,6 @@ const avatarOptions = ['👤', '👨‍🏫', '👩‍🏫', '👨', '👩', '�
 <style scoped>
 .profile-page {
   max-width: 600px;
-  margin: 0 auto;
   padding: 20px;
 }
 

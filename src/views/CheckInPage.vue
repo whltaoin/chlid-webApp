@@ -162,7 +162,6 @@ const getOverallStats = () => {
 <style scoped>
 .check-in-page {
   max-width: 1000px;
-  margin: 0 auto 120px;
   padding: 20px;
 }
 

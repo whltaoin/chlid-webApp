@@ -127,137 +127,141 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* 全局文本颜色设置 - 提高对比度确保可见性 */
-:deep(*) { color: #333333 !important; }
-
-/* 特殊元素颜色保持不变 */
-:deep(.van-tabbar-item--active),
-:deep(.van-tabbar-item--active .van-icon),
-.kindergarten-name,
-.kindergarten-slogan,
-.nav-text,
-.bottom-nav .active .nav-text {
-  color: inherit !important;
+/* 移除全局文本强制颜色，使用CSS变量确保样式一致性 */
+:deep(*) {
+  color: var(--text-color) !important;
 }
 
-/* 为内容区域添加底部内边距，避免被底部导航栏遮挡 */
-.content-wrapper {
-  margin-bottom: 60px;
+/* 特殊元素颜色设置 */
+:deep(.van-tabbar-item--active),
+:deep(.van-tabbar-item--active .van-icon),
+.nav-text,
+.bottom-nav .active .nav-text {
+  color: var(--primary-color) !important;
+}
+
+.kindergarten-name,
+.kindergarten-slogan {
+  color: white !important;
 }
 
 /* 自定义vant底部导航栏样式 */
 :deep(.van-tabbar-item--active) {
-  color: #07c160 !important;
+  color: var(--primary-color) !important;
 }
 
 :deep(.van-tabbar-item__icon) {
-  font-size: 22px;
+  font-size: 24px;
+  transition: transform var(--transition-fast);
+}
+
+:deep(.van-tabbar-item--active .van-tabbar-item__icon) {
+  transform: scale(1.1);
 }
 
 :deep(.van-tabbar) {
-  height: 50px;
-  box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
+  height: 60px;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+  background-color: var(--card-background) !important;
+  border-top: 1px solid var(--border-color);
+}
+
+:deep(.van-tabbar-item__text) {
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .app-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: inherit;
   background-color: var(--background-color);
-  border: none;
-  outline: none;
   margin: 0;
   padding: 0;
   overflow: hidden;
+  position: relative;
 }
 
-/* 全局样式重置 */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/* 顶部导航栏样式 */
+/* 顶部导航栏样式 - 增强童真风格 */
 .top-nav {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: 56px;
-  background: linear-gradient(135deg, #22c55e, #16a34a);
+  height: 60px;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
   display: flex;
   align-items: center;
-  padding: 0 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 0 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   z-index: 100;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  transition: all var(--transition-normal);
 }
 
-/* 汉堡菜单图标样式 */
+/* 顶部导航栏滚动效果 */
+.top-nav.scrolled {
+  height: 56px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* 汉堡菜单图标样式 - 更有趣的动画效果 */
 .menu-icon {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  width: 24px;
-  height: 18px;
+  width: 28px;
+  height: 20px;
   cursor: pointer;
   z-index: 101;
+  padding: 2px;
+  transition: transform var(--transition-fast);
+}
+
+.menu-icon:hover {
+  transform: scale(1.1);
 }
 
 .bar {
-  width: 24px;
-  height: 2px;
+  width: 28px;
+  height: 3px;
   background-color: #ffffff;
-  border-radius: 3px;
-  transition: all 0.3s ease;
+  border-radius: 5px;
+  transition: all var(--transition-normal);
+  position: relative;
 }
 
-/* 导航菜单样式 */
+/* 汉堡菜单动画状态 */
+.menu-icon.open .bar:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+.menu-icon.open .bar:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-icon.open .bar:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -7px);
+}
+
+/* 导航菜单样式 - 优化外观和动画 */
 .nav-menu {
   position: fixed;
-  top: 56px;
+  top: 60px;
   left: 0;
   right: 0;
-  background-color: #ffffff;
+  background-color: var(--card-background);
   z-index: 99;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  padding: 10px 0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  padding: 12px 8px;
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+  animation: slideDown var(--transition-normal) ease-out;
 }
 
-/* 导航菜单项样式 */
-.nav-item {
-  padding: 16px 20px;
-  cursor: pointer;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 16px;
-  color: #333;
-  transition: background-color 0.3s ease;
-}
-
-.nav-item:hover {
-  background-color: #f5f5f5;
-}
-
-/* 内容包装器样式 */
-.content-wrapper {
-  padding-top: 56px; /* 为顶部导航栏留出空间 */
-  min-height: 100vh;
-  background-color: #fafafa;
-}
-
-/* 导航遮罩层样式 */
-.nav-overlay {
-  position: fixed;
-  top: 56px;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 98;
-}
-
-/* 菜单动画 */
+/* 导航菜单动画 */
 @keyframes slideDown {
   from {
     transform: translateY(-20px);
@@ -269,27 +273,67 @@ onUnmounted(() => {
   }
 }
 
+/* 移除重复的导航项样式 */
+
+/* 内容包装器样式 - 优化布局和滚动体验 */
+.content-wrapper {
+  padding-top: 60px; /* 为顶部导航栏留出空间 */
+  padding-bottom: 120px; /* 为底部导航栏留出空间 */
+  min-height: 100vh;
+  background-color: var(--background-color);
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* 优化导航遮罩层样式 - 移除重复定义 */
+
+/* 优化导航菜单项样式 - 增强互动效果 */
 .nav-item {
   display: flex;
   align-items: center;
-  padding: 16px 20px;
-  transition: var(--transition-fast);
-  border-radius: 16px;
-  margin: 4px 12px;
+  padding: 18px 20px;
+  transition: var(--transition-normal);
+  border-radius: var(--border-radius-lg);
+  margin: 6px 12px;
   position: relative;
   overflow: hidden;
   background-color: white;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  border: 2px solid transparent;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .nav-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.2);
+  border-color: var(--primary-light);
 }
 
 .nav-item:active {
   background-color: var(--primary-light);
-  transform: translateY(0);
+  transform: translateY(0) scale(0.99);
+}
+
+/* 导航项点击波纹效果 */
+.nav-item::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.nav-item:active::after {
+  width: 300px;
+  height: 300px;
 }
 
 .nav-icon {
@@ -307,93 +351,124 @@ onUnmounted(() => {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* 导航遮罩层 - 童真柔和渐变 */
+/* 导航遮罩层 - 增强视觉效果 */
 .nav-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle at center, rgba(34, 197, 94, 0.1), rgba(132, 204, 22, 0.05));
+  background: radial-gradient(circle at center, rgba(16, 185, 129, 0.2), rgba(132, 204, 22, 0.08));
   z-index: 98;
-  animation: fadeIn 0.3s ease;
-  backdrop-filter: blur(3px);
+  animation: fadeIn var(--transition-normal) ease;
+  backdrop-filter: blur(5px);
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { 
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to { 
+    opacity: 1;
+    backdrop-filter: blur(5px);
+  }
 }
 
-.content-wrapper {
-  margin-bottom: 50px;
-  flex: 1;
-  overflow-y: auto;
-  background-color: #ffffff; /* 明确设置为白色背景 */
-  position: relative;
-  z-index: 1;
-  margin-top: 56px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(37, 99, 235, 0.3) transparent;
-}
-
-/* 确保登录页面占满整个容器 */
-.app-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  background-color: var(--background-color);
-  border: none;
-  outline: none;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-}
+/* 内容包装器 - 移除重复定义 */
 
 /* 确保页面背景始终为浅色 */
 .home-page, .ai-page, .profile-page {
-  background-color: #ffffff !important;
+  background-color: var(--background-color) !important;
 }
 
-/* 简单页面标题样式 */
+/* 简单页面标题样式 - 优化外观 */
 .simple-page-title {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 700;
-  color: var(--primary-color);
   text-align: center;
-  margin: 20px 0;
-  padding: 16px;
+  margin: 24px 16px;
+  padding: 20px 16px;
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   color: white;
-  border-radius: 20px;
-  margin: 16px;
-  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-fun);
+  position: relative;
+  overflow: hidden;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  letter-spacing: 0.5px;
 }
 
-/* 个人中心样式 */
+/* 标题装饰效果 */
+.simple-page-title::before {
+  content: '🌈';
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+  animation: bounce 2s infinite;
+}
+
+.simple-page-title::after {
+  content: '🌟';
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+  animation: float 3s infinite;
+}
+
+/* 个人中心样式 - 增强视觉效果 */
 .profile-info {
   display: flex;
   align-items: center;
-  padding: 20px;
-  margin: 16px;
-  background-color: #f0fdf4;
-  border-radius: 20px;
-  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.1);
-  border: 2px solid var(--primary-light);
+  padding: 24px;
+  margin: 20px 16px;
+  background-color: var(--background-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 3px solid var(--primary-light);
+  transition: var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-info:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* 个人信息卡片装饰 */
+.profile-info::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
 }
 
 .avatar {
-  font-size: 64px;
-  margin-right: 20px;
+  font-size: 72px;
+  margin-right: 24px;
   background-color: white;
   border-radius: 50%;
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  transition: var(--transition-normal);
+  border: 4px solid var(--primary-light);
+}
+
+.avatar:hover {
+  transform: scale(1.05) rotate(5deg);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 .user-basic-info {
@@ -415,7 +490,7 @@ onUnmounted(() => {
 
 /* 确保所有卡片和容器都有浅色背景 */
 .kindergarten-info, .features-section {
-  background-color: #f0fdf4 !important;
+  background-color: var(--background-color) !important;
 }
 
 .content-wrapper::-webkit-scrollbar {
@@ -431,21 +506,23 @@ onUnmounted(() => {
   border-radius: 10px;
 }
 
-/* 首页样式 - 科技感布局 */
+/* 首页样式 - 优化童真风格布局 */
 .home-page {
   padding: 0;
   margin-top: 0;
+  background-color: var(--background-color);
 }
 
-/* 头部区域 - 绿色童真风格渐变背景 */
+/* 头部区域 - 增强绿色童真风格渐变背景 */
 .kindergarten-header {
   position: relative;
   text-align: center;
   color: white;
-  height: 240px;
+  height: 260px;
   overflow: hidden;
-  border-bottom-left-radius: 30px;
-  border-bottom-right-radius: 30px;
+  border-bottom-left-radius: 36px;
+  border-bottom-right-radius: 36px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .header-bg {
@@ -458,41 +535,59 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-/* 童真风格云朵装饰 */
+/* 增强童真风格云朵装饰 */
 .header-bg::before {
   content: '';
   position: absolute;
   top: 20px;
   left: 10%;
-  width: 60px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
+  width: 70px;
+  height: 45px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 25px;
   box-shadow: 
-    80px 20px 0 0 rgba(255, 255, 255, 0.2),
-    40px 30px 0 0 rgba(255, 255, 255, 0.2),
-    120px 40px 0 0 rgba(255, 255, 255, 0.2);
-  animation: float 10s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateX(0) translateY(0); }
-  50% { transform: translateX(20px) translateY(-10px); }
+    100px 25px 0 0 rgba(255, 255, 255, 0.25),
+    50px 35px 0 0 rgba(255, 255, 255, 0.25),
+    150px 45px 0 0 rgba(255, 255, 255, 0.25);
+  animation: float 12s ease-in-out infinite;
 }
 
 /* 童真风格太阳效果 */
 .header-bg::after {
   content: '☀️';
   position: absolute;
-  bottom: 20px;
-  right: 20px;
-  font-size: 40px;
-  animation: spin 20s linear infinite;
+  bottom: 30px;
+  right: 30px;
+  font-size: 50px;
+  animation: spin 25s linear infinite;
 }
 
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+/* 添加更多装饰元素 */
+.header-bg .cloud {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+}
+
+.header-bg .cloud:nth-child(1) {
+  top: 60px;
+  left: 15%;
+  width: 40px;
+  height: 30px;
+  animation: float 8s ease-in-out infinite 1s;
+}
+
+.header-bg .cloud:nth-child(2) {
+  top: 100px;
+  right: 20%;
+  width: 50px;
+  height: 35px;
+  animation: float 9s ease-in-out infinite 0.5s;
 }
 
 .kindergarten-name {
@@ -544,24 +639,42 @@ onUnmounted(() => {
   backdrop-filter: blur(3px);
 }
 
-/* 信息卡片 - 童真风格设计 */
+/* 信息卡片 - 优化童真风格设计 */
 .kindergarten-info, .features-section {
-  padding: 24px;
-  background-color: #f0fdf4;
-  margin-bottom: 20px;
-  border-radius: 28px;
+  padding: 28px;
+  background-color: var(--background-color);
+  margin-bottom: 24px;
+  border-radius: var(--border-radius-lg);
   margin-left: 16px;
   margin-right: 16px;
-  margin-top: 20px;
-  box-shadow: 0 6px 24px rgba(34, 197, 94, 0.15);
+  margin-top: 24px;
+  box-shadow: var(--shadow-md);
   border: 3px solid var(--primary-light);
   position: relative;
   overflow: hidden;
-  /* 添加可爱的动物足迹装饰 */
+  transition: var(--transition-normal);
+  z-index: 1;
   background-image: 
     url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2Z' fill='%2384cc16' fill-opacity='0.2'/%3E%3Cpath d='M8 8C9.1 8 10 8.9 10 10C10 11.1 9.1 12 8 12C6.9 12 6 11.1 6 10C6 8.9 6.9 8 8 8Z' fill='%2384cc16' fill-opacity='0.2'/%3E%3Cpath d='M16 8C17.1 8 18 8.9 18 10C18 11.1 17.1 12 16 12C14.9 12 14 11.1 14 10C14 8.9 14.9 8 16 8Z' fill='%2384cc16' fill-opacity='0.2'/%3E%3C/svg%3E");
-  background-size: 40px 40px;
-  z-index: 1;
+  background-size: 50px 50px;
+}
+
+.kindergarten-info:hover, .features-section:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* 卡片装饰元素 */
+.kindergarten-info::after, .features-section::after {
+  content: '';
+  position: absolute;
+  bottom: -50px;
+  right: -50px;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  z-index: -1;
 }
 
 .kindergarten-info::before, .features-section::before {
@@ -574,30 +687,90 @@ onUnmounted(() => {
   background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
 }
 
-/* 标题样式 - 增强童真风格 */
+/* 标题样式 - 优化童真风格 */
 .section-title {
   font-size: 24px;
   font-weight: 700;
   color: var(--primary-color);
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   position: relative;
-  padding-left: 8px;
+  padding-left: 12px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  /* 添加可爱的装饰图标 */
+  letter-spacing: 0.5px;
 }
 
 .section-title::before {
   content: '✨';
-  font-size: 20px;
+  font-size: 22px;
   animation: twinkle 2s ease-in-out infinite;
 }
 
 @keyframes twinkle {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(1.1); }
+  50% { opacity: 0.7; transform: scale(1.1) rotate(10deg); }
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+  .kindergarten-header {
+    height: 220px;
+  }
+  
+  .simple-page-title {
+    font-size: 22px;
+    padding: 16px;
+  }
+  
+  .profile-info {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .avatar {
+    margin-right: 0;
+    margin-bottom: 20px;
+  }
+}
+
+/* 确保平滑滚动 */
+.content-wrapper {
+  scroll-behavior: smooth;
+}
+
+/* 优化按钮在应用中的显示 */
+:deep(.van-button) {
+  border-radius: var(--border-radius) !important;
+  transition: var(--transition-normal) !important;
+}
+
+:deep(.van-button--primary) {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-light) !important;
+}
+
+:deep(.van-button--primary:hover) {
+  background-color: var(--primary-dark) !important;
+}
+
+/* 优化输入框样式 */
+:deep(.van-field__control) {
+  font-size: 16px;
+  color: var(--text-color);
+}
+
+/* 优化卡片样式 */
+:deep(.van-card) {
+  border-radius: var(--border-radius) !important;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-normal);
+}
+
+:deep(.van-card:hover) {
+  box-shadow: var(--shadow-md);
 }
 
 .section-title::after {
