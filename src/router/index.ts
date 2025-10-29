@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useUserStore } from '../stores/userStore';
+import SafetyOverviewPage from '../views/SafetyOverviewPage.vue';
+import TemporaryPickupPage from '../views/TemporaryPickupPage.vue';
 
 // 定义路由配置
 const routes = [
@@ -24,6 +26,8 @@ const routes = [
   { path: '/check-in', name: 'checkIn', component: () => import('../views/CheckInPage.vue'), meta: { requiresAuth: true } },
   { path: '/class/:id', name: 'classDetail', component: () => import('../views/ClassDetailPage.vue'), meta: { requiresAuth: true } },
   { path: '/danger-behaviors', name: 'dangerBehaviors', component: () => import('../views/DangerBehaviorPage.vue'), meta: { requiresAuth: true } },
+  { path: '/safety-overview', name: 'safetyOverview', component: SafetyOverviewPage, meta: { requiresAuth: true } },
+  { path: '/temporary-pickup', name: 'temporaryPickup', component: TemporaryPickupPage, meta: { requiresAuth: true } },
   {
     path: '/profile',
     name: 'profile',

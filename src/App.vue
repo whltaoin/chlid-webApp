@@ -75,6 +75,12 @@ onUnmounted(() => {
         <div class="nav-item" @click="handleNavItemClick('dangerBehaviors')">
           <span>⚠️ 危险行为提醒</span>
         </div>
+        <div class="nav-item" @click="handleNavItemClick('safetyOverview')">
+          <span>🛡️ 安全动态总览</span>
+        </div>
+        <div class="nav-item" @click="handleNavItemClick('temporaryPickup')">
+          <span>📋 临时接送</span>
+        </div>
         <!-- <div class="nav-item" @click="handleNavItemClick('profile')">
           <span>👤 个人中心</span>
         </div> -->
