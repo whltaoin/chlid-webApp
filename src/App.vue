@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useUserStore } from './stores/userStore';
 import { Tabbar, TabbarItem } from 'vant';
+import { showToast } from 'vant';
 
 // 初始化路由和状态管理
 const router = useRouter();
@@ -15,6 +16,13 @@ const activeTab = ref<string>('home'); // 底部导航栏当前选中项
 
 // 切换导航菜单显示状态
 const toggleNav = () => {
+  // 检查用户是否已登录
+  if (!userStore.isLoggedIn) {
+    // 未登录时显示提示信息
+    showToast('请先登录后再访问功能');
+    return;
+  }
+  
   isNavOpen.value = !isNavOpen.value;
 };
 
@@ -34,6 +42,16 @@ const closeNavOnClickOutside = (event: MouseEvent) => {
 
 // 处理导航项点击
 const handleNavItemClick = (routeName: string) => {
+  // 检查用户是否已登录
+  if (!userStore.isLoggedIn) {
+    // 未登录时显示提示信息
+    showToast('请先登录后再访问功能');
+    // 关闭菜单
+    isNavOpen.value = false;
+    return;
+  }
+  
+  // 已登录时正常导航
   router.push({ name: routeName });
   isNavOpen.value = false; // 点击后关闭菜单
 };

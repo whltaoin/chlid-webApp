@@ -63,6 +63,36 @@ const logout = () => {
   <div class="home-page">
     <div class="home-header">
       <h1>欢迎来到智能幼教系统</h1>
+      
+      <!-- 幼儿园信息展示 -->
+      <div class="kindergarten-info">
+        <div class="kindergarten-header">
+          <div class="kindergarten-logo">🏫</div>
+          <div class="kindergarten-details">
+            <h2 class="kindergarten-name">阳光幼儿园</h2>
+            <p class="kindergarten-slogan">用心呵护，用爱教育</p>
+          </div>
+        </div>
+        <div class="kindergarten-description">
+          <p>阳光幼儿园是一所致力于为3-6岁儿童提供优质学前教育的现代化幼儿园。</p>
+          <p>我们注重培养儿童的综合素质，提供安全、温馨、充满爱的成长环境。</p>
+        </div>
+        <div class="kindergarten-stats">
+          <div class="stat-item">
+            <span class="stat-number">12</span>
+            <span class="stat-label">班级数量</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">300+</span>
+            <span class="stat-label">在园幼儿</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">40+</span>
+            <span class="stat-label">专业教师</span>
+          </div>
+        </div>
+      </div>
+      
       <div v-if="userStore.isLoggedIn" class="user-info">
         <span>当前登录: {{ userStore.user?.username }}</span>
         <span>角色: {{ userStore.user?.role }}</span>
@@ -74,66 +104,18 @@ const logout = () => {
     </div>
     
     <div class="home-content">
-      <h2 class="role-title">
+      <!-- <h2 class="role-title">
         {{ userStore.isTeacher ? '教师功能' : 
            userStore.isParent ? '家长功能' : 
            userStore.isInspectionTeam ? '验收小组功能' : 
            '系统功能' }}
       </h2>
+       -->
+     
       
-      <div class="feature-grid">
-        <!-- 所有角色都可访问的功能 -->
-        <div class="feature-card" @click="goToAIAssistant">
-          <div class="feature-icon">🤖</div>
-          <div class="feature-title">AI助手</div>
-          <div class="feature-desc">获取智能教育建议</div>
-        </div>
+     
         
-        <div class="feature-card" @click="goToProfile">
-          <div class="feature-icon">👤</div>
-          <div class="feature-title">个人资料</div>
-          <div class="feature-desc">管理个人信息</div>
-        </div>
-        
-        <!-- 教师角色可访问的功能 -->
-        <div v-if="userStore.isTeacher" class="feature-card" @click="goToCheckIn">
-          <div class="feature-icon">✅</div>
-          <div class="feature-title">入离园管理</div>
-          <div class="feature-desc">幼儿出勤记录</div>
-        </div>
-        
-        <div v-if="userStore.isTeacher" class="feature-card" @click="goToDangerBehaviors">
-          <div class="feature-icon">⚠️</div>
-          <div class="feature-title">危险行为预警</div>
-          <div class="feature-desc">监控幼儿行为安全</div>
-        </div>
-        
-        <!-- 家长角色可访问的功能 -->
-        <div v-if="userStore.isParent" class="feature-card" @click="goToSafetyOverview">
-          <div class="feature-icon">📊</div>
-          <div class="feature-title">安全动态总览</div>
-          <div class="feature-desc">查看幼儿安全状况</div>
-        </div>
-        
-        <div v-if="userStore.isParent" class="feature-card" @click="goToTemporaryPickup">
-          <div class="feature-icon">👨‍👩‍👧‍👦</div>
-          <div class="feature-title">临时接送</div>
-          <div class="feature-desc">管理临时接送人员</div>
-        </div>
-        
-        <!-- 验收小组可访问的功能 -->
-        <div v-if="userStore.isInspectionTeam" class="feature-card" @click="goToExpiryWarning">
-          <div class="feature-icon">⏰</div>
-          <div class="feature-title">预警信息</div>
-          <div class="feature-desc">查看物品到期预警</div>
-        </div>
-        
-        <div v-if="userStore.isInspectionTeam" class="feature-card" @click="goToItemEntry">
-          <div class="feature-icon">📋</div>
-          <div class="feature-title">物品录入</div>
-          <div class="feature-desc">录入和管理物品信息</div>
-        </div>
-      </div>
+      
     </div>
   </div>
 </template>
@@ -151,6 +133,84 @@ const logout = () => {
 .home-header h1 {
   color: #333;
   margin-bottom: 20px;
+}
+
+/* 幼儿园信息样式 */
+.kindergarten-info {
+  background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.kindergarten-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.kindergarten-logo {
+  font-size: 48px;
+  line-height: 1;
+}
+
+.kindergarten-details {
+  text-align: left;
+}
+
+.kindergarten-name {
+  font-size: 24px;
+  font-weight: bold;
+  color: #0288d1;
+  margin: 0 0 5px 0;
+}
+
+.kindergarten-slogan {
+  font-size: 16px;
+  color: #0277bd;
+  margin: 0;
+  font-style: italic;
+}
+
+.kindergarten-description {
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.kindergarten-description p {
+  margin: 8px 0;
+  line-height: 1.6;
+  color: #333;
+}
+
+.kindergarten-stats {
+  display: flex;
+  justify-content: space-around;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-number {
+  display: block;
+  font-size: 24px;
+  font-weight: bold;
+  color: #01579b;
+}
+
+.stat-label {
+  display: block;
+  font-size: 14px;
+  color: #0288d1;
+  margin-top: 5px;
 }
 
 .role-title {
