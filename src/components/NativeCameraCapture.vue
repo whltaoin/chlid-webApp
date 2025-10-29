@@ -305,13 +305,13 @@ const capturePhoto = async () => {
     }
     
     // 考虑镜像效果和设备差异
-    if (currentCamera === 'user' && !isMobile.value) {
-      ctx.translate(canvas.width, 0);
-      ctx.scale(-1, 1);
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    } else {
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    }
+      if (currentCamera === 'user' && !isMobile.value) {
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      }
     
     // 转换为base64格式
     const imageData = canvas.toDataURL('image/jpeg', 0.9);

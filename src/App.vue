@@ -61,25 +61,31 @@ onUnmounted(() => {
         </div>
       </header>
       
-      <!-- 导航菜单内容 - 使用vue-router进行导航 -->
+      <!-- 导航菜单内容 - 根据用户角色显示可访问的菜单项 -->
       <div v-if="isNavOpen" class="nav-menu">
-       
-        <div class="nav-item" @click="handleNavItemClick('checkIn')">
+        <!-- 教师角色可访问的菜单项 -->
+        <div v-if="userStore.isTeacher" class="nav-item" @click="handleNavItemClick('checkIn')">
           <span>📋 入离园管理</span>
         </div>
-        <div class="nav-item" @click="handleNavItemClick('dangerBehaviors')">
+        <div v-if="userStore.isTeacher" class="nav-item" @click="handleNavItemClick('dangerBehaviors')">
           <span>⚠️ 危险行为提醒</span>
         </div>
-        <div class="nav-item" @click="handleNavItemClick('safetyOverview')">
+        
+        <!-- 家长角色可访问的菜单项 -->
+        <div v-if="userStore.isParent" class="nav-item" @click="handleNavItemClick('safetyOverview')">
           <span>🛡️ 安全动态总览</span>
         </div>
-        <div class="nav-item" @click="handleNavItemClick('temporaryPickup')">
+        <div v-if="userStore.isParent" class="nav-item" @click="handleNavItemClick('temporaryPickup')">
           <span>📋 临时接送</span>
         </div>
-        <div class="nav-item" @click="handleNavItemClick('expiryWarning')">
+        
+        <!-- 验收小组可访问的菜单项 -->
+        <div v-if="userStore.isInspectionTeam" class="nav-item" @click="handleNavItemClick('expiryWarning')">
           <span>⚠️ 预警信息</span>
         </div>
-      
+        <div v-if="userStore.isInspectionTeam" class="nav-item" @click="handleNavItemClick('itemEntry')">
+          <span>📋 物品录入</span>
+        </div>
       </div>
       
       <!-- 导航遮罩层 -->

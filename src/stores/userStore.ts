@@ -28,7 +28,7 @@ export const useUserStore = defineStore('user', {
     
     // 检查是否为管理员
     isAdmin(): boolean {
-      return this.user?.role === '验收小组';
+      return this.user?.role === 'admin';
     },
     
     // 检查是否为教师（支持中英文角色名称）
@@ -41,6 +41,12 @@ export const useUserStore = defineStore('user', {
     isParent(): boolean {
       const role = this.user?.role || '';
       return role === 'parent' || role === '家长';
+    },
+    
+    // 检查是否为验收小组（支持中英文角色名称）
+    isInspectionTeam(): boolean {
+      const role = this.user?.role || '';
+      return role === 'inspection' || role === '验收小组';
     }
   },
   
