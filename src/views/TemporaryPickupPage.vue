@@ -189,7 +189,6 @@ onMounted(() => {
   min-height: 100vh;
   padding: 40px 20px;
   max-width: 1000px;
-  margin: 0 auto;
 }
 
 /* 页面标题 */
@@ -207,7 +206,6 @@ h1 {
   border-radius: 12px;
   width: 100%;
   max-width: 600px;
-  margin: 0 auto;
   padding: 25px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   overflow: hidden;

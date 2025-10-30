@@ -94,7 +94,7 @@ const submitLeaveRequest = () => {
 
 <template>
   <div class="safety-overview-page">
-    <h1>安全动态总览</h1>
+    <h1>今日安全动态总览</h1>
     
     <!-- 儿童信息卡片 -->
     <div class="child-info-card">

@@ -131,7 +131,6 @@ const getSeverityClass = (severity: string): string => {
 <style scoped>
 .danger-behavior-page {
   max-width: 1000px;
-  margin: 0 auto 120px;
   padding: 20px;
 }
 

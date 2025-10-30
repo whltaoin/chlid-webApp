@@ -91,7 +91,7 @@ onUnmounted(() => {
         
         <!-- 家长角色可访问的菜单项 -->
         <div v-if="userStore.isParent" class="nav-item" @click="handleNavItemClick('safetyOverview')">
-          <span>🛡️ 安全动态总览</span>
+          <span>🛡️ 今日安全动态总览</span>
         </div>
         <div v-if="userStore.isParent" class="nav-item" @click="handleNavItemClick('temporaryPickup')">
           <span>📋 临时接送</span>
@@ -740,19 +740,105 @@ onUnmounted(() => {
   scroll-behavior: smooth;
 }
 
-/* 优化按钮在应用中的显示 */
+/* 优化Vant按钮样式 - 符合绿色主题 */
 :deep(.van-button) {
-  border-radius: var(--border-radius) !important;
+  border-radius: var(--border-radius-lg) !important;
   transition: var(--transition-normal) !important;
+  font-family: inherit !important;
+  font-weight: 600 !important;
+  box-shadow: var(--shadow-sm) !important;
+  overflow: hidden !important;
+  position: relative !important;
 }
 
+/* 主要按钮样式 */
 :deep(.van-button--primary) {
   background-color: var(--primary-color) !important;
   border-color: var(--primary-light) !important;
+  color: white !important;
 }
 
 :deep(.van-button--primary:hover) {
   background-color: var(--primary-dark) !important;
+  transform: translateY(-2px) scale(1.02) !important;
+}
+
+/* 次要按钮样式 */
+:deep(.van-button--default) {
+  background-color: white !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-color) !important;
+}
+
+:deep(.van-button--default:hover) {
+  background-color: var(--background-color) !important;
+  border-color: var(--primary-light) !important;
+  color: var(--primary-color) !important;
+}
+
+/* 警告按钮样式 */
+:deep(.van-button--warning) {
+  background-color: var(--warning-color) !important;
+  border-color: #fcd34d !important;
+  color: var(--text-color) !important;
+}
+
+:deep(.van-button--warning:hover) {
+  background-color: #ca8a04 !important;
+}
+
+/* 危险按钮样式 */
+:deep(.van-button--danger) {
+  background-color: var(--danger-color) !important;
+  border-color: #f87171 !important;
+  color: white !important;
+}
+
+:deep(.van-button--danger:hover) {
+  background-color: #dc2626 !important;
+}
+
+/* 禁用按钮样式 */
+:deep(.van-button--disabled) {
+  opacity: 0.7 !important;
+}
+
+/* 按钮尺寸优化 */
+:deep(.van-button--large) {
+  padding: 12px 24px !important;
+  font-size: 16px !important;
+}
+
+:deep(.van-button--small) {
+  padding: 6px 12px !important;
+  font-size: 14px !important;
+}
+
+/* 按钮点击效果 */
+:deep(.van-button:active) {
+  transform: scale(0.98) !important;
+}
+
+/* 文本按钮优化 */
+:deep(.van-button--text) {
+  color: var(--primary-color) !important;
+  background-color: transparent !important;
+}
+
+:deep(.van-button--text:hover) {
+  color: var(--primary-dark) !important;
+  background-color: rgba(16, 185, 129, 0.1) !important;
+}
+
+/* 链接按钮优化 */
+:deep(.van-button--link) {
+  color: var(--primary-color) !important;
+  background-color: transparent !important;
+}
+
+:deep(.van-button--link:hover) {
+  color: var(--primary-dark) !important;
+  text-decoration: underline !important;
 }
 
 /* 优化输入框样式 */

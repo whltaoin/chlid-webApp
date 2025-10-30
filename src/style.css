@@ -233,7 +233,7 @@ li {
   line-height: 1.6;
 }
 
-/* 优化的按钮样式 - 更有趣和友好 */
+/* 优化的按钮样式 - 符合绿色主题，保留按钮含义区分 */
 button {
   border-radius: var(--border-radius-lg);
   border: 3px solid var(--primary-light);
@@ -251,6 +251,10 @@ button {
   overflow: hidden;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
 }
 
 /* 按钮点击波纹效果 */
@@ -272,18 +276,106 @@ button:active::after {
   height: 300px;
 }
 
-/* 次要按钮样式 */
+/* 主要按钮样式 - 绿色主题 */
+button.primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-light);
+  box-shadow: 0 8px 20px -5px rgba(16, 185, 129, 0.2);
+}
+
+button.primary:not(:disabled):hover {
+  background-color: var(--primary-dark);
+  box-shadow: 0 12px 25px -5px rgba(16, 185, 129, 0.3);
+}
+
+/* 次要按钮样式 - 浅绿色调 */
 button.secondary {
   background-color: var(--secondary-color);
   border-color: var(--secondary-light);
   box-shadow: 0 8px 20px -5px rgba(132, 204, 22, 0.2);
 }
 
-/* 强调按钮样式 */
+button.secondary:not(:disabled):hover {
+  background-color: var(--secondary-dark);
+  box-shadow: 0 12px 25px -5px rgba(132, 204, 22, 0.3);
+}
+
+/* 强调按钮样式 - 橙色点缀，增加活力 */
 button.accent {
   background-color: var(--accent-color);
   border-color: #fb923c;
   box-shadow: 0 8px 20px -5px rgba(249, 115, 22, 0.2);
+}
+
+button.accent:not(:disabled):hover {
+  background-color: #ea580c;
+  box-shadow: 0 12px 25px -5px rgba(249, 115, 22, 0.3);
+}
+
+/* 成功按钮样式 - 深绿色 */
+button.success {
+  background-color: var(--success-color);
+  border-color: #10b981;
+  box-shadow: 0 8px 20px -5px rgba(34, 197, 94, 0.2);
+}
+
+button.success:not(:disabled):hover {
+  background-color: #16a34a;
+  box-shadow: 0 12px 25px -5px rgba(34, 197, 94, 0.3);
+}
+
+/* 警告按钮样式 - 黄色调 */
+button.warning {
+  background-color: var(--warning-color);
+  border-color: #fcd34d;
+  box-shadow: 0 8px 20px -5px rgba(234, 179, 8, 0.2);
+  color: var(--text-color);
+}
+
+button.warning:not(:disabled):hover {
+  background-color: #ca8a04;
+  box-shadow: 0 12px 25px -5px rgba(234, 179, 8, 0.3);
+}
+
+/* 危险按钮样式 - 红色调 */
+button.danger {
+  background-color: var(--danger-color);
+  border-color: #f87171;
+  box-shadow: 0 8px 20px -5px rgba(239, 68, 68, 0.2);
+}
+
+button.danger:not(:disabled):hover {
+  background-color: #dc2626;
+  box-shadow: 0 12px 25px -5px rgba(239, 68, 68, 0.3);
+}
+
+/* 信息按钮样式 - 蓝色调，与绿色主题协调 */
+button.info {
+  background-color: #3b82f6;
+  border-color: #60a5fa;
+  box-shadow: 0 8px 20px -5px rgba(59, 130, 246, 0.2);
+}
+
+button.info:not(:disabled):hover {
+  background-color: #2563eb;
+  box-shadow: 0 12px 25px -5px rgba(59, 130, 246, 0.3);
+}
+
+/* 文本按钮样式 - 透明背景，仅文字和边框 */
+button.text {
+  background-color: transparent;
+  border-color: transparent;
+  color: var(--primary-color);
+  box-shadow: none;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+button.text:not(:disabled):hover {
+  background-color: var(--primary-light);
+  background-color: rgba(16, 185, 129, 0.1);
+  transform: none;
 }
 
 /* 禁用按钮样式 */
@@ -293,30 +385,54 @@ button:disabled {
   color: #9ca3af;
   cursor: not-allowed;
   box-shadow: none;
+  opacity: 0.7;
 }
 
 button:disabled:hover {
   transform: none;
 }
 
-/* 按钮悬停效果 */
-button:not(:disabled):hover {
+/* 通用按钮悬停效果 */
+button:not(:disabled):not(.text):hover {
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 12px 25px -5px rgba(16, 185, 129, 0.3);
-}
-
-button.secondary:not(:disabled):hover {
-  box-shadow: 0 12px 25px -5px rgba(132, 204, 22, 0.3);
-}
-
-button.accent:not(:disabled):hover {
-  box-shadow: 0 12px 25px -5px rgba(249, 115, 22, 0.3);
 }
 
 /* 按钮点击效果 */
 button:active {
   transform: scale(0.98) translateY(0);
+}
+
+button.primary:active {
   box-shadow: 0 4px 10px -3px rgba(16, 185, 129, 0.3);
+}
+
+button.secondary:active {
+  box-shadow: 0 4px 10px -3px rgba(132, 204, 22, 0.3);
+}
+
+button.accent:active {
+  box-shadow: 0 4px 10px -3px rgba(249, 115, 22, 0.3);
+}
+
+button.success:active {
+  box-shadow: 0 4px 10px -3px rgba(34, 197, 94, 0.3);
+}
+
+button.warning:active {
+  box-shadow: 0 4px 10px -3px rgba(234, 179, 8, 0.3);
+}
+
+button.danger:active {
+  box-shadow: 0 4px 10px -3px rgba(239, 68, 68, 0.3);
+}
+
+button.info:active {
+  box-shadow: 0 4px 10px -3px rgba(59, 130, 246, 0.3);
+}
+
+button.text:active {
+  background-color: rgba(16, 185, 129, 0.2);
+  transform: scale(0.98);
 }
 
 /* 小型按钮 */

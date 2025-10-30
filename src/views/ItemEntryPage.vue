@@ -15,7 +15,6 @@
 <style scoped>
 .item-entry-container {
   max-width: 1200px;
-  margin: 0 auto;
   padding: 20px;
   min-height: calc(100vh - 60px);
   background-color: #f5f5f5;

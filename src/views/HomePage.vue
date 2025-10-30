@@ -248,7 +248,6 @@ const logout = () => {
 
 .home-content {
   max-width: 800px;
-  margin: 0 auto;
 }
 
 .feature-grid {
