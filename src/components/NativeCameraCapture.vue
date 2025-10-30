@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 
 // 定义属性和事件
-const props = defineProps<{
+defineProps<{
   modelValue: string;
 }>();
 
@@ -377,17 +377,7 @@ const retryCamera = () => {
   }
 };
 
-// 检查是否有多个摄像头可用
-const checkMultipleCameras = async (): Promise<boolean> => {
-  try {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    const videoDevices = devices.filter(device => device.kind === 'videoinput');
-    return videoDevices.length >= 2;
-  } catch (error) {
-    console.warn('无法枚举设备:', error);
-    return false;
-  }
-};
+// 移除未使用的多摄像头检查函数
 </script>
 
 <template>

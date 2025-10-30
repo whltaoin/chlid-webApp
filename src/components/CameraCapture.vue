@@ -6,7 +6,7 @@ import VueMediaRecorder from 'vue-media-recorder';
 import 'vue-media-recorder/dist/vue-media-recorder.css';
 
 // 定义属性和事件
-const props = defineProps<{
+defineProps<{
   modelValue: string;
   showPermissionGuide?: boolean;
 }>();
@@ -26,9 +26,8 @@ const isMobile = ref(false);
 const permissionDeniedBefore = ref(false);
 const permissionRequestInProgress = ref(false);
 const hasUserInteraction = ref(false);
-const mediaRecorder = ref<any>(null);
-const isRecording = ref(false);
-const capturedImage = ref('');
+const mediaRecorder = ref<any>(null); // 保留mediaRecorder变量，因为它在代码中被使用
+// 简化相机捕获功能，移除未使用的变量
 
 // 更精确的移动设备检测
 const checkIfMobile = () => {

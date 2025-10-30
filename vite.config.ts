@@ -9,5 +9,16 @@ export default defineConfig({
     alias: {
       '@': resolve(__dirname, 'src')
     }
-  }
+  },
+  // uni-app配置
+  build: {
+    minify: 'terser',
+    terserOptions: {
+      format: {
+        comments: false
+      }
+    }
+  },
+  // 环境配置
+  envDir: './env'
 })

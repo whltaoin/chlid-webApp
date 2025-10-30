@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import CameraPreview from '../components/CameraPreview.vue';
 
-const router = useRouter();
+// 声明uni全局对象
+declare const uni: any;
+
 
 // 定义当前日期
 const checkInDate = ref('');
+const showCameraModal = ref(false);
+const selectedChild = ref<any>(null);
+const selectedClassId = ref('');
 
 // 模拟6个班级数据
 const classes = ref([
@@ -59,6 +64,25 @@ const classes = ref([
   }
 ]);
 
+// 模拟学生数据
+interface Child {
+  id: string;
+  name: string;
+  status: 'checkedIn' | 'notCheckedIn';
+  avatar: string;
+}
+
+// 模拟学生数据
+const childrenByClass = ref<Record<string, Child[]>>({
+  '1': [
+    { id: '101', name: '小明', status: 'checkedIn', avatar: '👶' },
+    { id: '102', name: '小红', status: 'checkedIn', avatar: '👧' },
+    { id: '103', name: '小刚', status: 'notCheckedIn', avatar: '🧒' },
+    // 更多学生...
+  ],
+  // 其他班级学生...
+});
+
 // 初始化页面
 onMounted(() => {
   // 设置当前日期
@@ -72,7 +96,64 @@ onMounted(() => {
 
 // 点击班级卡片跳转到班级详情页
 const navigateToClassDetail = (classId: string) => {
-  router.push(`/class/${classId}`);
+  // 使用uni-app的导航API
+  if (typeof uni !== 'undefined' && uni.navigateTo) {
+    uni.navigateTo({
+      url: `/views/ClassDetailPage?id=${classId}`
+    });
+  }
+};
+
+// 打开相机进行签到
+const openCameraForCheckIn = (classId: string, child?: any) => {
+  selectedClassId.value = classId;
+  selectedChild.value = child;
+  showCameraModal.value = true;
+};
+
+// 处理签到成功
+const handleCheckInSuccess = async () => {
+  // 这里可以调用API上传照片并完成签到
+  try {
+    // 模拟签到过程
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // 更新班级和学生状态
+    if (selectedClassId.value && classes.value.length > 0) {
+      const targetClass = classes.value.find(cls => cls.id === selectedClassId.value);
+      if (targetClass) {
+        targetClass.checkedIn += 1;
+        targetClass.notCheckedIn -= 1;
+      }
+    }
+    
+    if (selectedChild.value && childrenByClass.value[selectedClassId.value]) {
+      // 安全地访问数组并查找子项
+      const childrenArray = childrenByClass.value[selectedClassId.value] || [];
+      const child = childrenArray.find((c: any) => c.id === selectedChild.value.id);
+      if (child) {
+        child.status = 'checkedIn';
+      }
+    }
+    
+    if (typeof uni !== 'undefined' && uni.showToast) {
+      uni.showToast({
+        title: '签到成功',
+        icon: 'success',
+        duration: 2000
+      });
+    }
+    
+    showCameraModal.value = false;
+  } catch (error) {
+    if (typeof uni !== 'undefined' && uni.showToast) {
+      uni.showToast({
+        title: '签到失败，请重试',
+        icon: 'none',
+        duration: 2000
+      });
+    }
+  }
 };
 
 // 计算全园的签到统计
@@ -83,92 +164,174 @@ const getOverallStats = () => {
   const rate = total > 0 ? Math.round((checkedIn / total) * 100) : 0;
   return { total, checkedIn, notCheckedIn, rate };
 };
+
+// 相机组件引用
+const cameraRef = ref<any>(null);
+
+// 处理签到
+async function handleCheckIn() {
+  if (cameraRef.value) {
+    try {
+      // 调用相机组件的拍照方法
+      const imageData = await cameraRef.value.takePhoto();
+      if (imageData) {
+        // 处理签到成功
+        await handleCheckInSuccess();
+      }
+    } catch (error) {
+      if (typeof uni !== 'undefined' && uni.showToast) {
+        uni.showToast({
+          title: '签到失败，请重试',
+          icon: 'none',
+          duration: 2000
+        });
+      }
+    }
+  }
+}
 </script>
 
 <template>
-  <div class="check-in-page">
-    <h1>入离园管理</h1>
+  <view class="check-in-page">
+    <view class="page-header">
+      <text class="page-title">入离园管理</text>
+      <button class="quick-checkin-btn" @click="openCameraForCheckIn('')">
+        快速签到
+      </button>
+    </view>
     
-    <div class="check-in-header">
-      <div class="date-info">
-        <h2>{{ checkInDate }}</h2>
-        <p class="subtitle">幼儿园班级签到总览</p>
-      </div>
+    <view class="check-in-header">
+      <view class="date-info">
+        <text class="date-text">{{ checkInDate }}</text>
+        <text class="subtitle">幼儿园班级签到总览</text>
+      </view>
       
-      <div class="overall-stats">
-        <div class="stat-item">
-          <span class="stat-value">{{ getOverallStats().total }}</span>
-          <span class="stat-label">全园总数</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-value">{{ getOverallStats().notCheckedIn }}</span>
-          <span class="stat-label">未入园</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-value">{{ getOverallStats().rate }}%</span>
-          <span class="stat-label">入园率</span>
-        </div>
-      </div>
-    </div>
+      <view class="overall-stats">
+        <view class="stat-item">
+          <text class="stat-value">{{ getOverallStats().total }}</text>
+          <text class="stat-label">全园总数</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-value">{{ getOverallStats().notCheckedIn }}</text>
+          <text class="stat-label">未入园</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-value">{{ getOverallStats().rate }}%</text>
+          <text class="stat-label">入园率</text>
+        </view>
+      </view>
+    </view>
     
-    <div class="classes-section">
-      <h3>班级列表</h3>
-      <div class="classes-grid">
-        <div 
+    <view class="classes-section">
+      <text class="section-title">班级列表</text>
+      <view class="classes-grid">
+        <view 
           v-for="cls in classes" 
           :key="cls.id"
           class="class-card"
           @click="navigateToClassDetail(cls.id)"
           :style="{ borderTop: `4px solid ${cls.color}` }"
         >
-          <div class="class-header">
-            <h4 class="class-name">{{ cls.name }}</h4>
-            <span class="arrow-icon">›</span>
-          </div>
+          <view class="class-header">
+            <text class="class-name">{{ cls.name }}</text>
+            <text class="arrow-icon">›</text>
+          </view>
           
-          <div class="class-stats">
-            <div class="stat-row">
-              <span class="stat-label">儿童总数：</span>
-              <span class="stat-value">{{ cls.total }}</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">已入园：</span>
-              <span class="stat-value checked">{{ cls.checkedIn }}</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">未入园：</span>
-              <span class="stat-value pending">{{ cls.notCheckedIn }}</span>
-            </div>
-          </div>
+          <view class="class-stats">
+            <view class="stat-row">
+              <text class="stat-label">儿童总数：</text>
+              <text class="stat-value">{{ cls.total }}</text>
+            </view>
+            <view class="stat-row">
+              <text class="stat-label">已入园：</text>
+              <text class="stat-value checked">{{ cls.checkedIn }}</text>
+            </view>
+            <view class="stat-row">
+              <text class="stat-label">未入园：</text>
+              <text class="stat-value pending">{{ cls.notCheckedIn }}</text>
+            </view>
+          </view>
           
-          <div class="check-in-progress">
-            <div class="progress-bar">
-              <div 
+          <view class="check-in-progress">
+            <view class="progress-bar">
+              <view 
                 class="progress-fill" 
                 :style="{ 
                   width: `${(cls.checkedIn / cls.total) * 100}%`,
                   backgroundColor: cls.color 
                 }"
-              ></div>
-            </div>
-            <div class="progress-text">{{ Math.round((cls.checkedIn / cls.total) * 100) }}%</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+              ></view>
+            </view>
+            <text class="progress-text">{{ Math.round((cls.checkedIn / cls.total) * 100) }}%</text>
+          </view>
+          
+          <!-- 一键签到按钮 -->
+          <button 
+            class="class-checkin-btn"
+            :style="{ backgroundColor: cls.color }"
+            @click.stop="openCameraForCheckIn(cls.id)"
+          >
+            班级签到
+          </button>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 相机签到模态框 -->
+    <uni-popup 
+      v-model="showCameraModal" 
+      type="bottom" 
+      background-color="#fff"
+      :animation="true"
+    >
+      <view class="camera-modal">
+        <view class="modal-header">
+          <text class="modal-title">
+            {{ selectedChild ? `${selectedChild.name} 签到` : '班级签到' }}
+          </text>
+          <button class="close-btn" @click="showCameraModal = false">×</button>
+        </view>
+        
+        <view class="camera-content">
+          <CameraPreview ref="cameraRef" />
+        </view>
+        
+        <view class="modal-actions">
+          <button class="primary-button" @click="handleCheckIn">
+            确认签到
+          </button>
+        </view>
+      </view>
+    </uni-popup>
+  </view>
 </template>
 
 <style scoped>
 .check-in-page {
-  max-width: 1000px;
   padding: 20px;
+  background-color: #f5f5f5;
 }
 
-h1 {
-  text-align: center;
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: bold;
   color: #333;
-  margin-bottom: 30px;
+}
+
+.quick-checkin-btn {
+  background-color: #07C160;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 16px;
 }
 
 .check-in-header {
@@ -185,22 +348,24 @@ h1 {
   min-width: 200px;
 }
 
-.date-info h2 {
-  margin: 0 0 10px 0;
+.date-text {
+  display: block;
+  font-size: 20px;
+  font-weight: bold;
   color: #333;
+  margin-bottom: 8px;
 }
 
-.date-info .subtitle {
-  margin: 0;
+.subtitle {
   color: #666;
   font-size: 16px;
 }
 
 .overall-stats {
   display: flex;
-  gap: 30px;
+  gap: 20px;
   background-color: #f7f7f7;
-  padding: 20px;
+  padding: 15px;
   border-radius: 8px;
 }
 
@@ -222,10 +387,12 @@ h1 {
   margin-top: 5px;
 }
 
-.classes-section h3 {
-  margin-bottom: 20px;
-  color: #333;
+.section-title {
   font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20px;
+  display: block;
 }
 
 .classes-grid {
@@ -239,13 +406,10 @@ h1 {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   padding: 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.class-card:hover {
+.class-card:active {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
 }
@@ -258,7 +422,6 @@ h1 {
 }
 
 .class-name {
-  margin: 0;
   font-size: 18px;
   font-weight: 600;
   color: #333;
@@ -267,10 +430,9 @@ h1 {
 .arrow-icon {
   font-size: 24px;
   color: #999;
-  transition: color 0.3s;
 }
 
-.class-card:hover .arrow-icon {
+.class-card:active .arrow-icon {
   color: #07c160;
 }
 
@@ -306,6 +468,7 @@ h1 {
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-bottom: 15px;
 }
 
 .progress-bar {
@@ -328,6 +491,58 @@ h1 {
   color: #333;
   min-width: 40px;
   text-align: right;
+}
+
+.class-checkin-btn {
+  width: 100%;
+  padding: 12px;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+/* 相机模态框样式 */
+.camera-modal {
+  padding: 20px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 30px;
+  color: #999;
+}
+
+.camera-content {
+  margin-bottom: 20px;
+}
+
+.modal-actions {
+  margin-top: 20px;
+}
+
+.primary-button {
+  width: 100%;
+  padding: 15px;
+  background-color: #07C160;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 18px;
 }
 
 /* 响应式设计 */

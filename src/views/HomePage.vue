@@ -7,45 +7,7 @@ const router = useRouter();
 // 使用用户状态管理
 const userStore = useUserStore();
 
-// 跳转到AI助手页面
-const goToAIAssistant = () => {
-  router.push({ name: 'aiAssistant' });
-};
-
-// 跳转到入离园管理页面
-const goToCheckIn = () => {
-  router.push({ name: 'checkIn' });
-};
-
-// 跳转到危险行为预警页面
-const goToDangerBehaviors = () => {
-  router.push({ name: 'dangerBehaviors' });
-};
-
-// 跳转到安全动态总览页面
-const goToSafetyOverview = () => {
-  router.push({ name: 'safetyOverview' });
-};
-
-// 跳转到临时接送页面
-const goToTemporaryPickup = () => {
-  router.push({ name: 'temporaryPickup' });
-};
-
-// 跳转到预警信息页面
-const goToExpiryWarning = () => {
-  router.push({ name: 'expiryWarning' });
-};
-
-// 跳转到物品录入页面
-const goToItemEntry = () => {
-  router.push({ name: 'itemEntry' });
-};
-
-// 跳转到个人资料页面
-const goToProfile = () => {
-  router.push({ name: 'profile' });
-};
+// 导航功能将在模板中直接使用router.push
 
 // 跳转到登录页面
 const goToLogin = () => {

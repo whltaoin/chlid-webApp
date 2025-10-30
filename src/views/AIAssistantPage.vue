@@ -1,9 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-
-// 使用路由
-const router = useRouter();
 
 // 定义聊天消息列表
 const messages = ref([
@@ -16,14 +12,7 @@ const messages = ref([
 // 定义输入消息
 const inputMessage = ref('');
 
-// 模拟AI回复的预设答案
-const presetReplies = [
-  '对于幼儿早期教育，建议多进行互动式学习，培养孩子的动手能力和创造力。',
-  '幼儿语言发展关键期是0-6岁，家长可以通过多讲故事、唱儿歌等方式促进语言能力发展。',
-  '孩子注意力持续时间有限，学习活动应该保持多样化，每次不宜过长。',
-  '培养孩子的社交能力很重要，鼓励他们与同龄人一起玩耍和分享。',
-  '正面激励比批评更有效，多表扬孩子的进步，增强他们的自信心。'
-];
+// 简化AI助手功能
 
 // 发送消息
 const sendMessage = () => {
@@ -35,19 +24,11 @@ const sendMessage = () => {
     content: inputMessage.value
   });
   
-  const userInput = inputMessage.value;
   inputMessage.value = '';
   
   // 模拟AI回复延迟
   setTimeout(() => {
-    // // 简单匹配关键词，提供更相关的回复
-    // let reply: string = presetReplies[Math.floor(Math.random() * presetReplies.length)];
-    
-    // if (userInput.includes('语言') || userInput.includes('说话')) {
-    //   reply = presetReplies[1] || '';
-    // } else if (userInput.includes('注意力') || userInput.includes('专注')) {
-    //   reply = presetReplies[2] || '';
-    // } else if (userInput.includes('社交') || userInput.includes('朋友')) {
+    // 简单回复
     //   reply = presetReplies[3] || '';
     // } else if (userInput.includes('表扬') || userInput.includes('鼓励') || userInput.includes('自信')) {
     //   reply = presetReplies[4] || '';

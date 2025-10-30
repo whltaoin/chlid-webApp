@@ -122,7 +122,7 @@ const router = createRouter({
 });
 
 // 路由守卫
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   // 创建用户store实例
   const userStore = useUserStore();
   
@@ -142,7 +142,7 @@ router.beforeEach((to, from, next) => {
   if (to.meta?.requiresAuth && to.meta?.roles) {
     const userRole = userStore.user?.role;
     // 检查用户角色是否在允许的角色列表中
-    if (!userRole || !to.meta.roles.includes(userRole)) {
+    if (!userRole || !Array.isArray(to.meta.roles) || !to.meta.roles.includes(userRole)) {
       // 无权限访问，重定向到首页
       next({ name: 'home' });
       return;

@@ -1,0 +1,66 @@
+{
+  "name": "儿童安全管理",
+  "appid": "__UNI__ABC123",
+  "description": "儿童安全管理系统",
+  "versionName": "1.0.0",
+  "versionCode": "100",
+  "transformPx": true,
+  "app-plus": {
+    "usingComponents": true,
+    "nvueStyleCompiler": "uni-app",
+    "compilerVersion": 3,
+    "splashscreen": {
+      "alwaysShowBeforeRender": true,
+      "waiting": true,
+      "autoclose": true,
+      "delay": 0
+    },
+    "runmode": "liberate",
+    "permission": {
+      "scope.camera": {
+        "desc": "用于拍照和视频录制"
+      },
+      "scope.writePhotosAlbum": {
+        "desc": "保存图片到相册"
+      },
+      "scope.readContacts": {
+        "desc": "读取联系人信息"
+      }
+    }
+  },
+  "quickapp": {
+    "package": "com.example.childsafe",
+    "name": "儿童安全管理",
+    "versionName": "1.0.0",
+    "versionCode": "1"
+  },
+  "mp-weixin": {
+    "appid": "",
+    "navigationBarTitleText": "儿童安全管理",
+    "permission": {
+      "scope.userLocation": {
+        "desc": "您的位置信息将用于安全管理"
+      },
+      "scope.camera": {
+        "desc": "用于拍照和视频录制"
+      }
+    }
+  },
+  "h5": {
+    "title": "儿童安全管理",
+    "router": {
+      "mode": "history"
+    },
+    "domain": "",
+    "sdkConfigs": {
+      "payment": {
+        "alipay": {
+          "appid": "",
+          "pid": "",
+          "privateKey": "",
+          "version": 1
+        }
+      }
+    }
+  }
+}

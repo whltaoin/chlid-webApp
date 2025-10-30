@@ -6,9 +6,15 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:h5": "vite build --mode h5",
+    "build:mp-weixin": "vite build --mode mp-weixin",
+    "build:mp-alipay": "vite build --mode mp-alipay",
+    "build:mp-baidu": "vite build --mode mp-baidu",
+    "build:app-plus": "vite build --mode app-plus"
   },
   "dependencies": {
+    "@dcloudio/uni-ui": "^1.5.11",
     "pinia": "^3.0.3",
     "vant": "^4.9.21",
     "vue": "^3.5.22",
@@ -16,9 +22,11 @@
     "vue-router": "^4.6.3"
   },
   "devDependencies": {
+    "@dcloudio/types": "^3.4.26",
     "@types/node": "^24.6.0",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/tsconfig": "^0.8.1",
+    "terser": "^5.44.0",
     "typescript": "~5.9.3",
     "vite": "npm:rolldown-vite@7.1.14",
     "vue-tsc": "^3.1.0"

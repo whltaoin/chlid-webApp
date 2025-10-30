@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
 import { useUserStore } from './stores/userStore';
-import { Tabbar, TabbarItem } from 'vant';
 import { showToast } from 'vant';
 
-// 初始化路由和状态管理
-const router = useRouter();
-const route = useRoute();
+// 声明uni全局对象
+declare const uni: any;
+// 声明getCurrentPages全局函数
+declare function getCurrentPages(): Array<{ route: string }>;
+
+// 初始化状态管理
 const userStore = useUserStore();
 
 // 响应式数据
 const isNavOpen = ref<boolean>(false); // 默认关闭，点击汉堡菜单打开
-const activeTab = ref<string>('home'); // 底部导航栏当前选中项
+// 底部导航栏逻辑将在uni-app中通过pages.json配置
 
 // 切换导航菜单显示状态
 const toggleNav = () => {
@@ -40,7 +41,7 @@ const closeNavOnClickOutside = (event: MouseEvent) => {
   }
 };
 
-// 处理导航项点击
+// 处理导航项点击 - 适配uni-app导航
 const handleNavItemClick = (routeName: string) => {
   // 检查用户是否已登录
   if (!userStore.isLoggedIn) {
@@ -51,8 +52,25 @@ const handleNavItemClick = (routeName: string) => {
     return;
   }
   
-  // 已登录时正常导航
-  router.push({ name: routeName });
+  // 已登录时使用uni-app导航
+  const routeMap: Record<string, string> = {
+    'home': '/views/HomePage',
+    'checkIn': '/views/CheckInPage',
+    'dangerBehaviors': '/views/DangerBehaviorPage',
+    'safetyOverview': '/views/SafetyOverviewPage',
+    'temporaryPickup': '/views/TemporaryPickupPage',
+    'expiryWarning': '/views/ExpiryWarningPage',
+    'itemEntry': '/views/ItemEntryPage',
+    'aiAssistant': '/views/AIAssistantPage',
+    'profile': '/views/ProfilePage'
+  };
+  
+  if (routeMap[routeName] && typeof uni !== 'undefined' && uni.navigateTo) {
+    uni.navigateTo({
+      url: routeMap[routeName]
+    });
+  }
+  
   isNavOpen.value = false; // 点击后关闭菜单
 };
 
@@ -68,62 +86,54 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="app-container">
+    <view class="app-container">
       <!-- 顶部导航栏 - 只在非登录页面和非班级详情页面显示 -->
-      <header v-if="route.name !== 'login' && route.name !== 'classDetail'" class="top-nav">
+        <view v-if="false" class="top-nav">
         <!-- 汉堡菜单按钮 -->
-        <div class="menu-icon" @click.stop="toggleNav">
-          <div class="bar"></div>
-          <div class="bar"></div>
-          <div class="bar"></div>
-        </div>
-      </header>
+        <view class="menu-icon" @click.stop="toggleNav">
+          <view class="bar"></view>
+          <view class="bar"></view>
+          <view class="bar"></view>
+        </view>
+      </view>
       
       <!-- 导航菜单内容 - 根据用户角色显示可访问的菜单项 -->
-      <div v-if="isNavOpen" class="nav-menu">
+      <view v-if="isNavOpen" class="nav-menu">
         <!-- 教师角色可访问的菜单项 -->
-        <div v-if="userStore.isTeacher" class="nav-item" @click="handleNavItemClick('checkIn')">
-          <span>📋 入离园管理</span>
-        </div>
-        <div v-if="userStore.isTeacher" class="nav-item" @click="handleNavItemClick('dangerBehaviors')">
-          <span>⚠️ 危险行为提醒</span>
-        </div>
+        <view v-if="userStore.isTeacher" class="nav-item" @click="handleNavItemClick('checkIn')">
+          <text>📋 入离园管理</text>
+        </view>
+        <view v-if="userStore.isTeacher" class="nav-item" @click="handleNavItemClick('dangerBehaviors')">
+          <text>⚠️ 危险行为提醒</text>
+        </view>
         
         <!-- 家长角色可访问的菜单项 -->
-        <div v-if="userStore.isParent" class="nav-item" @click="handleNavItemClick('safetyOverview')">
-          <span>🛡️ 今日安全动态总览</span>
-        </div>
-        <div v-if="userStore.isParent" class="nav-item" @click="handleNavItemClick('temporaryPickup')">
-          <span>📋 临时接送</span>
-        </div>
+        <view v-if="userStore.isParent" class="nav-item" @click="handleNavItemClick('safetyOverview')">
+          <text>🛡️ 今日安全动态总览</text>
+        </view>
+        <view v-if="userStore.isParent" class="nav-item" @click="handleNavItemClick('temporaryPickup')">
+          <text>📋 临时接送</text>
+        </view>
         
         <!-- 验收小组可访问的菜单项 -->
-        <div v-if="userStore.isInspectionTeam" class="nav-item" @click="handleNavItemClick('expiryWarning')">
-          <span>⚠️ 预警信息</span>
-        </div>
-        <div v-if="userStore.isInspectionTeam" class="nav-item" @click="handleNavItemClick('itemEntry')">
-          <span>📋 物品录入</span>
-        </div>
-      </div>
+        <view v-if="userStore.isInspectionTeam" class="nav-item" @click="handleNavItemClick('expiryWarning')">
+          <text>⚠️ 预警信息</text>
+        </view>
+        <view v-if="userStore.isInspectionTeam" class="nav-item" @click="handleNavItemClick('itemEntry')">
+          <text>📋 物品录入</text>
+        </view>
+      </view>
       
       <!-- 导航遮罩层 -->
-      <div v-if="isNavOpen" class="nav-overlay" @click="isNavOpen = false"></div>
+      <view v-if="isNavOpen" class="nav-overlay" @click="isNavOpen = false"></view>
       
-      <!-- 内容包装器 -->
-      <div class="content-wrapper">
-        <!-- 使用router-view显示当前路由对应的组件 -->
-        <router-view />
-      </div>
+      <!-- 内容包装器 - 使用插槽替代router-view -->
+      <view class="content-wrapper">
+        <slot></slot>
+      </view>
       
-      <!-- 底部导航栏 - 只在非登录页面和非班级详情页面显示 -->
-      <div v-if="route.name !== 'login' && route.name !== 'classDetail'">
-        <van-tabbar v-model="activeTab" route>
-            <van-tabbar-item name="home" icon="home-o" to="/" title="首页"></van-tabbar-item>
-            <van-tabbar-item name="aiAssistant" icon="chat-o" to="/ai-assistant" title="AI助手"></van-tabbar-item>
-            <van-tabbar-item name="profile" icon="user-o" to="/profile" title="个人中心"></van-tabbar-item>
-          </van-tabbar>
-      </div>
-    </div>
+      <!-- 底部导航栏由pages.json的tabBar配置管理 -->
+    </view>
 </template>
 
 <style scoped>
